@@ -1,46 +1,21 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-# qt files
-*.pro.user*
-.qmake*
-moc/
-moc_*
-ui_*
-# shadow build directories
-build-*
-Makefile
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# Icon must end with two \r
+Icon
 
-# Visual Studio Crap
-*.vcproj
-*.vcxproj
-*.sln
-*.user
-*.filters
 
-# Executables
-*.exe
-*.out
-# image files
-*.psd
+# Thumbnails
+._*
 
-*.app
-# temp files under linux
-*.~*
-#bzr files
-.bzr/
-#zips and tgz
-*.tgz
-*.zip
-*.tar.gz
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
