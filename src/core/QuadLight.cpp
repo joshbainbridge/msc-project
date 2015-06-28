@@ -7,8 +7,8 @@ MSC_NAMESPACE_BEGIN
 //Uniformally sample across light surface
 Vector3f QuadLight::sampleLight(RandomGenerator &_random_generator) const
 {
-  float x_rand = (_random_generator.getValue() - 0.5f) * m_width;
-  float y_rand = (_random_generator.getValue() - 0.5f) * m_height;
+  float x_rand = (_random_generator.getSample() - 0.5f) * m_width;
+  float y_rand = (_random_generator.getSample() - 0.5f) * m_height;
 
   return m_origin + (m_right * x_rand) + (m_up * y_rand);
 }

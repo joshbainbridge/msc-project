@@ -47,8 +47,8 @@ Vector2f GeometricCamera::rejection_sample_circle(RandomGenerator &_random_gener
   while (ray_found != true)
   {
     //Get random values between 0 and 1 then construct vector
-    float x_rand = _random_generator.getValue() - 0.5f;
-    float y_rand = _random_generator.getValue() - 0.5f;
+    float x_rand = _random_generator.getSample() - 0.5f;
+    float y_rand = _random_generator.getSample() - 0.5f;
     output = Vector2f(x_rand, y_rand);
 
     //Is vector within sphere

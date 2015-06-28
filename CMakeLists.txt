@@ -32,6 +32,7 @@ SET( CORE_HEADERS
   ${INC}/core/RandomGenerator.h
   ${INC}/core/Scene.h
   ${INC}/core/Settings.h
+  ${INC}/core/ComputePoints.h
   )
 
 SET( FRB_SOURCES

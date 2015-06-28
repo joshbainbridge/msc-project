@@ -10,7 +10,7 @@ MSC_NAMESPACE_BEGIN
 class RandomGenerator
 {
 public:
-  float getValue();
+  float getSample();
 
 private:
   boost::mt19937 m_generator;
