@@ -1,8 +1,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#include <cfloat>
-#include <cmath>
+#include <stddef.h>
+#include <math.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -13,7 +13,7 @@ MSC_NAMESPACE_BEGIN
 
 template < typename type > bool compare(const type _a, const type _b)
 {
-  return std::fabs(static_cast<float>(_a) - static_cast<float>(_b)) < M_EPSILON;
+  return fabs(static_cast<float>(_a) - static_cast<float>(_b)) < M_EPSILON;
 }
 
 template < typename type > void cartesianToSphericalCoord(const type _x, const type _y, const type _z, float *azimuthal, float *polar)
@@ -21,15 +21,15 @@ template < typename type > void cartesianToSphericalCoord(const type _x, const t
   float x = static_cast<float>(_x);
   float y = static_cast<float>(_y);
   float z = static_cast<float>(_z);
-  *polar = std::atan(y / x);
-  *azimuthal = std::atan(std::sqrt(x * x + y * y) / z);
+  *polar = atan(y / x);
+  *azimuthal = atan(sqrt(x * x + y * y) / z);
 }
 
 template < typename type > void sphericalToCartesianCoord(const type _azimuthal, const type _polar, float *x, float *y, float *z)
 {
-  *x = std::cos(_polar) * std::sin(_azimuthal);
-  *y = std::sin(_polar) * std::sin(_azimuthal);
-  *z = std::cos(_azimuthal);
+  *x = cos(_polar) * sin(_azimuthal);
+  *y = sin(_polar) * sin(_azimuthal);
+  *z = cos(_azimuthal);
 }
 
 template < typename t_origin, typename t_direction > struct Ray

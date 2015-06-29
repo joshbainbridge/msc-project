@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 
 #include <core/QuadLight.h>
 
@@ -18,7 +18,7 @@ Colour3f QuadLight::illumination(const Vector3f &light_direction) const
 {
   Colour3f illumination = m_colour * m_watts;
   float light_falloff = 1.f / light_direction.squaredNorm();
-  float cosine_distrobution = std::pow(light_direction.normalized().dot(m_dir * -1), m_sine_exponent);
+  float cosine_distrobution = pow(light_direction.normalized().dot(m_dir * -1), m_sine_exponent);
   
   return illumination * light_falloff * cosine_distrobution;
 }

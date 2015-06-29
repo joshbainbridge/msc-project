@@ -11,42 +11,48 @@ SET( INC include)
 SET( THR thirdparty )
 
 SET( CORE_SOURCES
-  ${SRC}/core/CameraInterface.cpp
-  ${SRC}/core/GeometricCamera.cpp
+  ${SRC}/core/Pathtracer.cpp
   ${SRC}/core/Image.cpp
-  ${SRC}/core/LightInterface.cpp
-  ${SRC}/core/Pixel.cpp
-  ${SRC}/core/QuadLight.cpp
   ${SRC}/core/RandomGenerator.cpp
-  ${SRC}/core/Scene.cpp
+  ${SRC}/core/LocalBin.cpp
+  ${SRC}/core/GlobalBin.cpp
+  # ${SRC}/core/CameraInterface.cpp
+  # ${SRC}/core/GeometricCamera.cpp
+  # ${SRC}/core/LightInterface.cpp
+  # ${SRC}/core/QuadLight.cpp
+  # ${SRC}/core/RenderThread.cpp
   )
 
 SET( CORE_HEADERS
-  ${INC}/core/CameraInterface.h
+  ${INC}/core/Pathtracer.h
+  ${INC}/core/Constants.h
   ${INC}/core/Common.h
-  ${INC}/core/GeometricCamera.h
-  ${INC}/core/Image.h
-  ${INC}/core/LightInterface.h
-  ${INC}/core/Pixel.h
-  ${INC}/core/QuadLight.h
-  ${INC}/core/RandomGenerator.h
-  ${INC}/core/Scene.h
   ${INC}/core/Settings.h
-  ${INC}/core/ComputePoints.h
+  ${INC}/core/Image.h
+  ${INC}/core/Scene.h
+  ${INC}/core/RandomGenerator.h
+  ${INC}/core/LocalBin.h
+  ${INC}/core/GlobalBin.h
+  # ${INC}/core/CameraInterface.h
+  # ${INC}/core/GeometricCamera.h
+  # ${INC}/core/LightInterface.h
+  # ${INC}/core/QuadLight.h
+  # ${INC}/core/RenderThread.h
+  ${INC}/core/TbbTest.h
   )
 
 SET( FRB_SOURCES
-  ${SRC}/framebuffer/Framebuffer.cpp
+  # ${SRC}/framebuffer/Framebuffer.cpp
   )
 
 SET( FRB_HEADERS
-  ${INC}/framebuffer/PlatformSpecification.h
-  ${INC}/framebuffer/Framebuffer.h
+  # ${INC}/framebuffer/PlatformSpecification.h
+  # ${INC}/framebuffer/Framebuffer.h
   )
 
 SET( THIRD_PARTY
-  ${THR}/tinyobjloader/tiny_obj_loader.cpp
-  ${THR}/tinyobjloader/tiny_obj_loader.h
+  # ${THR}/tinyobjloader/tiny_obj_loader.cpp
+  # ${THR}/tinyobjloader/tiny_obj_loader.h
   )
 
 ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME}

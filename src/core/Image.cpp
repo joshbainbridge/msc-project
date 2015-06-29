@@ -4,94 +4,37 @@
 
 MSC_NAMESPACE_BEGIN
 
-//Set image resolution
-void Image::resolution(const int _resolution_x, const int _resolution_y)
+Image::Image(const int _width, const int _height, const int _samples)
 {
-  m_resolution_x = _resolution_x;
-  m_resolution_y = _resolution_y;
+  m_width = _width;
+  m_height = _height;
+  m_samples = _samples;
 
-  m_pixels.clear();
-  m_pixels.resize(m_resolution_x);
+  size_t sample_count = _width * _height * _samples;
+  data = new Sample[sample_count];
+  for(size_t i = 0; i < sample_count; ++i)
+    data[i] = Sample(0, 0, 0.f, 0.f, 0.f);
 
-  for (int column = 0; column < m_resolution_x; ++column)
+  size_t pixel_count = _width * _height;
+  m_image_r = new float[pixel_count];
+  m_image_g = new float[pixel_count];
+  m_image_b = new float[pixel_count];
+  for(size_t i = 0; i < sample_count; ++i)
   {
-    m_pixels[column].resize(m_resolution_y);
+    m_image_r[i] = 0.f;
+    m_image_g[i] = 0.f;
+    m_image_b[i] = 0.f;
   }
+
+  m_iteration = 0;
 }
 
-//Add sample to specific pixel in image
-void Image::addSample(const int _pixel_x, const int _pixel_y, const Colour3f _sample)
+Image::~Image()
 {
-  m_mutex.lock();
-  m_pixels[_pixel_x][_pixel_y].addSample(_sample);
-  m_mutex.unlock();
-}
-
-//Add bucket of sample information to image to optimise synchronisation
-void Image::addBucket(const std::vector< std::vector< std::vector< Colour3f > > > &_bucket)
-{
-  m_mutex.lock();
-  
-  // for (int x_index = 0; x_index < _task.width; ++x_index)
-  // {
-  //   for (int y_index = 0; y_index < _task.height; ++y_index)
-  //   {
-  //     for (int sample_index = 0; sample_index < _task.samples; ++sample_index)
-  //     {
-  //       m_pixels[_task.pixel_x + x_index][_task.pixel_y + y_index].addSample(_bucket[x_index][y_index][sample_index]);
-  //     }
-  //   }
-  // }
-  
-  m_mutex.unlock();
-}
-
-//Return image as a vector of colours, averaging samples from each pixel
-std::vector< std::vector< Colour3f > > Image::getImage()
-{
-  std::vector< std::vector< Colour3f > > image_output;
-
-  m_mutex.lock();
-  for (int x_pixel = 0; x_pixel < m_resolution_x; ++x_pixel)
-  {
-    std::vector< Colour3f > column;
-
-    for (int y_pixel = 0; y_pixel < m_resolution_y; ++y_pixel)
-    {
-      Vector3f pixel;
-
-      pixel = m_pixels[x_pixel][y_pixel].pixelColour();
-
-      pixel.x() = gamma(clamp(pixel.x(), 0.f, 1.f), 2.2f);
-      pixel.y() = gamma(clamp(pixel.y(), 0.f, 1.f), 2.2f);
-      pixel.z() = gamma(clamp(pixel.z(), 0.f, 1.f), 2.2f);
-
-      column.push_back(pixel);
-    }
-
-    image_output.push_back(column);
-  }
-  m_mutex.unlock();
-
-  return image_output;
-}
-
-//Clear all image pixel data
-void Image::clearImage()
-{
-  m_pixels.clear();
-}
-
-//Gamma correction
-float Image::gamma(const float _value, const float _gamma) const
-{
-  return std::pow(_value, (1.f / _gamma));
-}
-
-//Clamp colour data
-float Image::clamp(const float _value, const float _min, const float _max) const
-{
-  return std::max(_min, std::min(_value, _max));
+  delete[] data;
+  delete[] m_image_r;
+  delete[] m_image_g;
+  delete[] m_image_b;
 }
 
 MSC_NAMESPACE_END

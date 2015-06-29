@@ -3,7 +3,6 @@
 
 #include <core/Common.h>
 #include <core/CameraInterface.h>
-#include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
 

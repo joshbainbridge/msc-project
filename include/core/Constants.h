@@ -1,6 +1,8 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#include <float.h>
+
 #ifdef M_PI
   #undef M_PI
 #endif
