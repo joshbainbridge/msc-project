@@ -8,34 +8,35 @@
 #include <boost/filesystem.hpp>
 #include <OpenEXR/ImfRgbaFile.h>
 
-#include <core/Pathtracer.h>
 #include <framebuffer/Framebuffer.h>
+#include <core/Pathtracer.h>
 
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace program_options = boost::program_options;
+namespace filesystem = boost::filesystem;
 
-int main(int argc, const char *argv[])
+void commands(const int ac, const char *av[], std::string* output, filesystem::path* input)
 {
-  po::options_description visible("options");
+  program_options::options_description visible("options");
   visible.add_options()
     ("help,h", "Produce help message")
-    ("output-type,t", po::value< std::string >(), "Framebuffer or file output")
+    ("output-type,t", program_options::value< std::string >(), "Either 'framebuffer' or 'file' output")
   ;
 
-  po::options_description hidden("hidden options");
+  program_options::options_description hidden("hidden options");
   hidden.add_options()
-    ("input-file,i", po::value< fs::path >(), "Input scene file")
+    ("input-file,i", program_options::value< filesystem::path >(), "Input scene file")
   ;
 
-  po::options_description description("all options");
+  program_options::options_description description("all options");
   description.add(visible).add(hidden);
 
-  po::positional_options_description positional;
+  program_options::positional_options_description positional;
   positional.add("input-file", -1);
  
-  po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).options(description).positional(positional).run(), vm);
-  po::notify(vm);
+  program_options::variables_map vm;
+  program_options::store(
+    program_options::command_line_parser(ac, av).options(description).positional(positional).run(), vm);
+  program_options::notify(vm);
 
   if(vm.count("help"))
   {
@@ -44,11 +45,10 @@ int main(int argc, const char *argv[])
     std::exit(EXIT_SUCCESS);
   }
 
-  std::string output_type("framebuffer");
   if(vm.count("output-type"))
   {
-    output_type = vm["output-type"].as< std::string >();
-    if(output_type != "framebuffer" && output_type != "file")
+    *output = vm["output-type"].as< std::string >();
+    if(*output != "framebuffer" && *output != "file")
     {
       std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
       std::cerr << visible << std::endl;
@@ -56,10 +56,9 @@ int main(int argc, const char *argv[])
     }
   }
 
-  fs::path input_file;
   if(vm.count("input-file"))
   {
-    input_file = vm["input-file"].as< fs::path >();
+    *input = vm["input-file"].as< filesystem::path >();
   }
   else
   {
@@ -67,6 +66,14 @@ int main(int argc, const char *argv[])
     std::cerr << visible << std::endl;
     std::exit(EXIT_FAILURE);
   }
+}
+
+int main(int argc, const char *argv[])
+{
+  std::string output_type("framebuffer");
+  filesystem::path input_file("");
+
+  commands(argc, argv, &output_type, &input_file);
 
   float* image_pointer;
   int width;
@@ -99,7 +106,8 @@ int main(int argc, const char *argv[])
       framebuffer->image(image_pointer, width, height);
 
       boost::chrono::high_resolution_clock::time_point timer_end = boost::chrono::high_resolution_clock::now();
-      boost::chrono::milliseconds iteration_time(boost::chrono::duration_cast<boost::chrono::milliseconds>(timer_end - timer_start).count());
+      boost::chrono::milliseconds iteration_time(boost::chrono::duration_cast<boost::chrono::milliseconds>
+        (timer_end - timer_start).count());
       if(iteration_time < iteration_second)
       {
         boost::this_thread::sleep_for(iteration_second - iteration_time);
@@ -116,7 +124,7 @@ int main(int argc, const char *argv[])
       image[i] = Imf::Rgba(image_pointer[i * 3 + 0], image_pointer[i * 3 + 1], image_pointer[i * 3 + 2], 1.f);
     }
 
-    std::string output_file = fs::basename(input_file).append(".exr");
+    std::string output_file = filesystem::basename(input_file).append(".exr");
     Imf::RgbaOutputFile* file = new Imf::RgbaOutputFile(output_file.c_str(), width, height, Imf::WRITE_RGBA);
     file->setFrameBuffer(image, 1, width);
     file->writePixels(height);

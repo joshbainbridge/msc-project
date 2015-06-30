@@ -14,7 +14,7 @@ Image::Image(const int _width, const int _height, const int _base)
   size_t channel_count = _width * _height * 3;
   pixels.resize(channel_count);
   for(size_t i = 0; i < channel_count; ++i)
-    pixels[i] = 0.5f;
+    pixels[i] = 0.f;
 }
 
 MSC_NAMESPACE_END

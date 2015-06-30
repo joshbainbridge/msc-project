@@ -22,10 +22,26 @@ camera:
 object:
   type: polygon
   filename: objects/dragon.obj
+  position: [ 50.2, 10, 0 ]
+  rotation: [ 0, 90, 0 ]
+  scale: [ 1, 1, 1 ]
+  material: 1
+
+object:
+  type: polygon
+  filename: objects/dragon.obj
   position: [ -50.2, 10, 0 ]
   rotation: [ 0, 90, 0 ]
   scale: [ 1, 1, 1 ]
-  material: 23
+  material: 1
+
+object:
+  type: polygon
+  filename: objects/dragon.obj
+  position: [ 0.2, 10, 0 ]
+  rotation: [ 0, 90, 0 ]
+  scale: [ 1, 1, 1 ]
+  material: 1
 
 material:
   type: diffuse

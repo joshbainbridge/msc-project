@@ -17,4 +17,4 @@ Required dependencies are:
 * GLFW 3.0
 * OpenGL 3.3
 * GLEW (Windows/Linux only)
-* Eigen (Included in source)
+* Eigen
