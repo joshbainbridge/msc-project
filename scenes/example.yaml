@@ -1,0 +1,38 @@
+--- # Setup
+
+image:
+  width: 700
+  height: 500
+  sample base: 4
+
+settings:
+  ray depth: 3
+  bucket size: 16
+
+camera:
+  type: Geometric
+  origin: [ 0, 0, 1250 ]
+  direction: [ 0, 0, -1 ]
+  focal length: 3.7320508075
+  focal distance: 1100
+  aperture: 200
+
+--- # Scene
+
+object:
+  type: polygon
+  filename: objects/dragon.obj
+  position: [ -50.2, 10, 0 ]
+  rotation: [ 0, 90, 0 ]
+  scale: [ 1, 1, 1 ]
+  material: 23
+
+material:
+  type: diffuse
+  color: [ 0.2, 0.8, 0.1 ]
+  roughness: 34
+
+light:
+  type: quad
+  color: [ 0.2, 0.8, 0.1 ]
+  radiance: 34

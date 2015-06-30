@@ -2,6 +2,7 @@
 #define _COMMON_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <Eigen/Core>

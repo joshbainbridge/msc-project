@@ -5,10 +5,10 @@
 
 #include <framebuffer/PlatformSpecification.h>
 
-#define FRB_NAMESPACE_BEGIN namespace frb {
-#define FRB_NAMESPACE_END }
+#define FRM_NAMESPACE_BEGIN namespace frm {
+#define FRM_NAMESPACE_END }
 
-FRB_NAMESPACE_BEGIN
+FRM_NAMESPACE_BEGIN
 
 class Framebuffer
 {
@@ -28,11 +28,11 @@ public:
   {;}
 
   ~Framebuffer();
-  GLFWwindow* init(const int _resx, const int _resy, void* input_data = NULL);
+  GLFWwindow* init(const int _resx, const int _resy, void* _input_data = NULL);
   void bind();
   void draw();
   bool close();
-  void image(const float *_image, const int _resx, const int _resy);
+  void image(const float* _image, const int _resx, const int _resy);
   void title(const std::string &_title);
 
 private:
@@ -65,6 +65,6 @@ private:
   float m_scale;
 };
 
-FRB_NAMESPACE_END
+FRM_NAMESPACE_END
 
 #endif

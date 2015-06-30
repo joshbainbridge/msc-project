@@ -2,7 +2,6 @@
 #define _PATHTRACER_H_
 
 #include <string>
-#include <queue>
 
 #include <boost/scoped_ptr.hpp>
 #include <tbb/concurrent_queue.h>
@@ -10,9 +9,9 @@
 #include <core/Common.h>
 #include <core/GlobalBin.h>
 #include <core/Settings.h>
+#include <core/CameraInterface.h>
 #include <core/Image.h>
 #include <core/Scene.h>
-#include <core/CameraInterface.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -34,18 +33,22 @@ class Pathtracer
 {
 public:
   Pathtracer(const std::string &_filename);
+
   void clear();
+  void image(float** _pixels, int* _with, int* _height);
+
+  inline int iteration() const {return m_settings->iteration;}
 
 private:
   boost::scoped_ptr< GlobalBin > m_bin;
   boost::scoped_ptr< Settings > m_settings;
+  boost::scoped_ptr< CameraInterface > m_camera;
   boost::scoped_ptr< Image > m_image;
   boost::scoped_ptr< Scene > m_scene;
-  boost::scoped_ptr< CameraInterface > m_camera;
 
-  tbb::concurrent_queue< CameraTask > CameraStack;
-  tbb::concurrent_queue< SurfaceTask > SurfaceStack;
-  std::queue< std::string > BatchStack;
+  tbb::concurrent_queue< CameraTask > m_camera_queue;
+  tbb::concurrent_queue< SurfaceTask > m_surface_queue;
+  tbb::concurrent_queue< std::string > m_batch_queue;
 };
 
 MSC_NAMESPACE_END

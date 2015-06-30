@@ -38,16 +38,15 @@ SET( CORE_HEADERS
   # ${INC}/core/LightInterface.h
   # ${INC}/core/QuadLight.h
   # ${INC}/core/RenderThread.h
-  ${INC}/core/TbbTest.h
   )
 
-SET( FRB_SOURCES
-  # ${SRC}/framebuffer/Framebuffer.cpp
+SET( FRM_SOURCES
+  ${SRC}/framebuffer/Framebuffer.cpp
   )
 
-SET( FRB_HEADERS
-  # ${INC}/framebuffer/PlatformSpecification.h
-  # ${INC}/framebuffer/Framebuffer.h
+SET( FRM_HEADERS
+  ${INC}/framebuffer/PlatformSpecification.h
+  ${INC}/framebuffer/Framebuffer.h
   )
 
 SET( THIRD_PARTY
@@ -57,14 +56,20 @@ SET( THIRD_PARTY
 
 ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME}
   ${SRC}/main.cpp
+  )
+
+ADD_LIBRARY( pathtracer
   ${CORE_SOURCES}
   ${CORE_HEADERS}
-  ${FRB_SOURCES}
-  ${FRB_HEADERS}
   ${THIRD_PARTY}
   )
 
-FIND_PACKAGE( Boost COMPONENTS system filesystem iostreams chrono python REQUIRED )
+ADD_LIBRARY( framebuffer
+  ${FRM_SOURCES}
+  ${FRM_HEADERS}
+  )
+
+FIND_PACKAGE( Boost COMPONENTS system filesystem program_options iostreams thread chrono python REQUIRED )
 FIND_PACKAGE( TBB REQUIRED )
 FIND_PACKAGE( Embree REQUIRED )
 FIND_PACKAGE( Eigen3 REQUIRED )
@@ -81,7 +86,7 @@ IF( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR "Linux" )
   FIND_PACKAGE( GLEW REQUIRED )
 
   INCLUDE_DIRECTORIES( ${GLEW_INCLUDE_DIR} )
-  TARGET_LINK_LIBRARIES( ${CMAKE_PROJECT_NAME} ${GLEW_LIBRARY} )
+  TARGET_LINK_LIBRARIES( framebuffer ${GLEW_LIBRARY} )
 
 ENDIF()
 
@@ -104,10 +109,14 @@ INCLUDE_DIRECTORIES(
 
 TARGET_LINK_LIBRARIES( ${CMAKE_PROJECT_NAME}
   ${Boost_LIBRARIES}
+  pathtracer
+  framebuffer
+  )
+
+TARGET_LINK_LIBRARIES( pathtracer
+  ${Boost_LIBRARIES}
   ${TBB_LIBRARIES}
   ${EMBREE_LIBRARIES}
-  ${GLFW_LIBRARIES}
-  ${OPENGL_LIBRARIES}
   ${YAMLCPP_LIBRARY}
   ${OPENEXR_LIBRARIES}
   ${OCIO_LIBRARIES}
@@ -115,4 +124,20 @@ TARGET_LINK_LIBRARIES( ${CMAKE_PROJECT_NAME}
   ${PYTHON_LIBRARIES}
   )
 
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/objects DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+TARGET_LINK_LIBRARIES( framebuffer
+  ${GLFW_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  )
+
+INSTALL(
+  TARGETS ${CMAKE_PROJECT_NAME} pathtracer
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  )
+
+INSTALL(
+  FILES ${CORE_HEADERS}
+  PUBLIC_HEADER DESTINATION include/pathtracer
+  )
+
+FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/scenes DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

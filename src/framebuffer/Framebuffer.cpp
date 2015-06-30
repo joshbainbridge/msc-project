@@ -2,7 +2,7 @@
 
 #include <framebuffer/Framebuffer.h>
 
-FRB_NAMESPACE_BEGIN
+FRM_NAMESPACE_BEGIN
 
 Framebuffer::~Framebuffer()
 {
@@ -17,7 +17,7 @@ Framebuffer::~Framebuffer()
   glfwTerminate();
 }
 
-GLFWwindow* Framebuffer::init(const int _resx, const int _resy, void* input_data)
+GLFWwindow* Framebuffer::init(const int _resx, const int _resy, void* _input_data)
 {
   m_res_x = _resx;
   m_res_y = _resy;
@@ -25,9 +25,9 @@ GLFWwindow* Framebuffer::init(const int _resx, const int _resy, void* input_data
   createContext();
   createSurface();
 
-  if(input_data != NULL)
+  if(_input_data != NULL)
   {
-    glfwSetWindowUserPointer(m_window, input_data);
+    glfwSetWindowUserPointer(m_window, _input_data);
   }
   else
   {
@@ -160,7 +160,7 @@ void Framebuffer::createSurface()
 
   glGenTextures(1, &m_texture);
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 10, 10, 0, GL_RGB, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_res_x, m_res_y, 0, GL_RGB, GL_FLOAT, NULL);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -188,7 +188,7 @@ void Framebuffer::createContext()
   m_window = glfwCreateWindow(m_res_x, m_res_y, "Graphics Environment", NULL, NULL);
 
   glfwMakeContextCurrent(m_window);
-  glfwSwapInterval(false);
+  glfwSwapInterval(true);
   
   GLenum opengl_error = glGetError();
   if(opengl_error != GL_NO_ERROR)
@@ -277,4 +277,4 @@ void Framebuffer::mouseButtonCallback(GLFWwindow* window, int button, int action
   }
 }
 
-FRB_NAMESPACE_END
+FRM_NAMESPACE_END
