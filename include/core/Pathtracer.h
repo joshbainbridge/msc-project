@@ -12,6 +12,7 @@
 #include <core/CameraInterface.h>
 #include <core/Image.h>
 #include <core/Scene.h>
+#include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -36,6 +37,7 @@ public:
 
   void clear();
   void image(float** _pixels, int* _with, int* _height);
+  void process();
 
   inline int iteration() const {return m_settings->iteration;}
 
@@ -49,6 +51,8 @@ private:
   tbb::concurrent_queue< CameraTask > m_camera_queue;
   tbb::concurrent_queue< SurfaceTask > m_surface_queue;
   tbb::concurrent_queue< std::string > m_batch_queue;
+  
+  RandomGenerator m_random;
 };
 
 MSC_NAMESPACE_END

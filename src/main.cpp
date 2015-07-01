@@ -18,13 +18,13 @@ void commands(const int ac, const char *av[], std::string* output, filesystem::p
 {
   program_options::options_description visible("options");
   visible.add_options()
-    ("help,h", "Produce help message")
-    ("output-type,t", program_options::value< std::string >(), "Either 'framebuffer' or 'file' output")
+    ("help,h", "produce help message")
+    ("type,t", program_options::value< std::string >(), "'framebuffer' or 'file' output")
   ;
 
   program_options::options_description hidden("hidden options");
   hidden.add_options()
-    ("input-file,i", program_options::value< filesystem::path >(), "Input scene file")
+    ("input-file,i", program_options::value< filesystem::path >(), "input scene file")
   ;
 
   program_options::options_description description("all options");
@@ -45,9 +45,9 @@ void commands(const int ac, const char *av[], std::string* output, filesystem::p
     std::exit(EXIT_SUCCESS);
   }
 
-  if(vm.count("output-type"))
+  if(vm.count("type"))
   {
-    *output = vm["output-type"].as< std::string >();
+    *output = vm["type"].as< std::string >();
     if(*output != "framebuffer" && *output != "file")
     {
       std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
@@ -82,15 +82,29 @@ int main(int argc, const char *argv[])
   msc::Pathtracer* pathtracer = new msc::Pathtracer(input_file.string());
   pathtracer->image(&image_pointer, &width, &height);
 
+  // pathtracer process here...
+  pathtracer->process();
+
   if(output_type == "framebuffer")
   {
     frm::Framebuffer* framebuffer = new frm::Framebuffer();
     framebuffer->init(width, height);
 
-    framebuffer->image(image_pointer, width, height);
+    size_t iteration = pathtracer->iteration();
+
+    size_t pixel_count = width * height;
+    unsigned char* image = new unsigned char[pixel_count * 3];
+
+    for(size_t i = 0; i < pixel_count; ++i)
+    {
+      image[3 * i + 0] = static_cast<unsigned char>(image_pointer[3 * i + 0] * 255 / iteration);
+      image[3 * i + 1] = static_cast<unsigned char>(image_pointer[3 * i + 1] * 255 / iteration);
+      image[3 * i + 2] = static_cast<unsigned char>(image_pointer[3 * i + 2] * 255 / iteration);
+    }
+
+    framebuffer->image(image, width, height);
     framebuffer->bind();
 
-    unsigned int iteration = 0;
     boost::chrono::milliseconds iteration_second( 1000 / 60 );
 
     while(!framebuffer->close())
@@ -99,11 +113,21 @@ int main(int argc, const char *argv[])
       
       framebuffer->draw();
 
-      std::string title = "Graphics Environment Iteration: " + std::to_string(++iteration);
+      iteration = pathtracer->iteration();
+      std::string title = "Graphics Environment Iteration: " + std::to_string(iteration);
       framebuffer->title(title);
 
-      // pathtracer process here...
-      framebuffer->image(image_pointer, width, height);
+      // pathtracer iterate process here...
+      pathtracer->process();
+
+      for(size_t i = 0; i < pixel_count; ++i)
+      {
+        image[3 * i + 0] = static_cast<unsigned char>(image_pointer[3 * i + 0] * 255 / iteration);
+        image[3 * i + 1] = static_cast<unsigned char>(image_pointer[3 * i + 1] * 255 / iteration);
+        image[3 * i + 2] = static_cast<unsigned char>(image_pointer[3 * i + 2] * 255 / iteration);
+      }
+
+      framebuffer->image(image, width, height);
 
       boost::chrono::high_resolution_clock::time_point timer_end = boost::chrono::high_resolution_clock::now();
       boost::chrono::milliseconds iteration_time(boost::chrono::duration_cast<boost::chrono::milliseconds>
@@ -113,13 +137,16 @@ int main(int argc, const char *argv[])
         boost::this_thread::sleep_for(iteration_second - iteration_time);
       }
     }
+
+    delete[] image;
+    delete framebuffer;
   }
   else if(output_type == "file")
   {
-    int pixel_count = width * height;
+    size_t pixel_count = width * height;
     Imf::Rgba* image = new Imf::Rgba[pixel_count];
 
-    for(int i = 0; i < pixel_count; ++i)
+    for(size_t i = 0; i < pixel_count; ++i)
     {
       image[i] = Imf::Rgba(image_pointer[i * 3 + 0], image_pointer[i * 3 + 1], image_pointer[i * 3 + 2], 1.f);
     }
@@ -134,6 +161,8 @@ int main(int argc, const char *argv[])
     delete[] image;
     delete file;
   }
+  
+  delete pathtracer;
 
   return EXIT_SUCCESS;
 }

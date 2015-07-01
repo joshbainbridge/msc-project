@@ -16,8 +16,8 @@ public:
   Framebuffer()
     : m_update(true)
     , m_pan(false)
-    , m_res_x(700.f)
-    , m_res_y(500.f)
+    , m_resolution_x(700.f)
+    , m_resolution_y(500.f)
     , m_screen_x(0.f)
     , m_screen_y(0.f)
     , m_state_x(0.f)
@@ -32,7 +32,7 @@ public:
   void bind();
   void draw();
   bool close();
-  void image(const float* _image, const int _resx, const int _resy);
+  void image(const unsigned char* _image, const int _resx, const int _resy);
   void title(const std::string &_title);
 
 private:
@@ -58,7 +58,7 @@ private:
 private:
   bool m_update;
   bool m_pan;
-  float m_res_x, m_res_y;
+  float m_resolution_x, m_resolution_y;
   float m_screen_x, m_screen_y;
   float m_state_x, m_state_y;
   float m_trans_x, m_trans_y;

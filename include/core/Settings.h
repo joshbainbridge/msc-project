@@ -7,12 +7,6 @@ MSC_NAMESPACE_BEGIN
 
 struct Settings
 {
-  Settings()
-   : ray_depth(0)
-   , bucket_size(0)
-   , iteration(1)
-  {;}
-  
   size_t ray_depth;
   size_t bucket_size;
   size_t iteration;

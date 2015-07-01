@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <core/Common.h>
-#include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -14,21 +13,19 @@ struct Sample
   float r, g, b;
 };
 
-class Image
+struct Pixel
 {
-public:
-  Image(const int _width, const int _height, const int _base);
+  float r, g, b;
+};
 
-public:
+struct Image
+{
+  size_t width;
+  size_t height;
+  size_t base;
+
   std::vector< Sample > samples;
-  std::vector< float > pixels;
-
-private:
-  int m_width;
-  int m_height;
-  int m_base;
-
-  RandomGenerator m_random;
+  std::vector< Pixel > pixels;
 };
 
 MSC_NAMESPACE_END

@@ -17,10 +17,10 @@ Framebuffer::~Framebuffer()
   glfwTerminate();
 }
 
-GLFWwindow* Framebuffer::init(const int _resx, const int _resy, void* _input_data)
+GLFWwindow* Framebuffer::init(const int _resolution_x, const int _resolution_y, void* _input_data)
 {
-  m_res_x = _resx;
-  m_res_y = _resy;
+  m_resolution_x = _resolution_x;
+  m_resolution_y = _resolution_y;
 
   createContext();
   createSurface();
@@ -77,10 +77,10 @@ bool Framebuffer::close()
 }
 
 
-void Framebuffer::image(const float *_image, const int _resx, const int _resy)
+void Framebuffer::image(const unsigned char* _image, const int _resolution_x, const int _resolution_y)
 {
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _resx, _resy, GL_RGB, GL_FLOAT, _image);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _resolution_x, _resolution_y, GL_RGB, GL_UNSIGNED_BYTE, _image);
 }
 
 void Framebuffer::title(const std::string &_title)
@@ -160,7 +160,7 @@ void Framebuffer::createSurface()
 
   glGenTextures(1, &m_texture);
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_res_x, m_res_y, 0, GL_RGB, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_resolution_x, m_resolution_y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -185,7 +185,7 @@ void Framebuffer::createContext()
   glfwWindowHint(GLFW_SAMPLES, 2);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   
-  m_window = glfwCreateWindow(m_res_x, m_res_y, "Graphics Environment", NULL, NULL);
+  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Graphics Environment", NULL, NULL);
 
   glfwMakeContextCurrent(m_window);
   glfwSwapInterval(true);
@@ -250,8 +250,8 @@ void Framebuffer::cursorPositionCallback(GLFWwindow* window, double xpos, double
   {
     framebuffer->m_update = true;
     float scale = 2.f / framebuffer->m_scale;
-    framebuffer->m_trans_x = framebuffer->m_state_x + ((xpos - framebuffer->m_screen_x) / framebuffer->m_res_x) * scale;
-    framebuffer->m_trans_y = framebuffer->m_state_y + ((framebuffer->m_screen_y - ypos) / framebuffer->m_res_y) * scale;
+    framebuffer->m_trans_x = framebuffer->m_state_x + ((xpos - framebuffer->m_screen_x) / framebuffer->m_resolution_x) * scale;
+    framebuffer->m_trans_y = framebuffer->m_state_y + ((framebuffer->m_screen_y - ypos) / framebuffer->m_resolution_y) * scale;
   }
 }
 
