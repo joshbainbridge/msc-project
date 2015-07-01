@@ -14,54 +14,67 @@
 namespace program_options = boost::program_options;
 namespace filesystem = boost::filesystem;
 
-void commands(const int ac, const char *av[], std::string* output, filesystem::path* input)
+void commands(const int ac, const char *av[], bool* file, filesystem::path* input)
 {
+  *file = false;
+
   program_options::options_description visible("options");
   visible.add_options()
     ("help,h", "produce help message")
-    ("type,t", program_options::value< std::string >(), "'framebuffer' or 'file' output")
+    ("file,f", "output as file")
   ;
 
   program_options::options_description hidden("hidden options");
   hidden.add_options()
-    ("input-file,i", program_options::value< filesystem::path >(), "input scene file")
+    ("input", program_options::value< filesystem::path >()->required(), "input scene file")
   ;
 
   program_options::options_description description("all options");
   description.add(visible).add(hidden);
 
   program_options::positional_options_description positional;
-  positional.add("input-file", -1);
+  positional.add("input", -1);
  
   program_options::variables_map vm;
-  program_options::store(
-    program_options::command_line_parser(ac, av).options(description).positional(positional).run(), vm);
-  program_options::notify(vm);
 
-  if(vm.count("help"))
+  try
   {
-    std::cout << "usage: msc-project [options] scene_file.yaml" << std::endl;
-    std::cout << visible << std::endl;
-    std::exit(EXIT_SUCCESS);
-  }
+    program_options::store(
+      program_options::command_line_parser(ac, av).options(description).positional(positional).run(), vm);
 
-  if(vm.count("type"))
-  {
-    *output = vm["type"].as< std::string >();
-    if(*output != "framebuffer" && *output != "file")
+    if(vm.count("help"))
     {
-      std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
-      std::cerr << visible << std::endl;
-      std::exit(EXIT_FAILURE);
+      std::cout << "usage: msc-project [options] scene_file.yaml" << std::endl;
+      std::cout << visible << std::endl;
+      std::exit(EXIT_SUCCESS);
     }
+
+    program_options::notify(vm);
+
+    if(vm.count("file"))
+      *file = true;
+
+    if(vm.count("input"))
+      *input = vm["input"].as< filesystem::path >();
+  }
+  catch(program_options::required_option& error)
+  {
+    std::cerr << "error: " << "a scene file is required but missing" << std::endl << std::endl;
+    std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
+    std::cerr << visible << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  catch(program_options::error& error)
+  {
+    std::cerr << "error: " << error.what() << std::endl << std::endl;
+    std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
+    std::cerr << visible << std::endl;
+    std::exit(EXIT_FAILURE);
   }
 
-  if(vm.count("input-file"))
+  if(!filesystem::exists( *input ))
   {
-    *input = vm["input-file"].as< filesystem::path >();
-  }
-  else
-  {
+    std::cerr << "error: " << "the scene file does not exist" << std::endl << std::endl;
     std::cerr << "usage: msc-project [options] scene_file.yaml" << std::endl;
     std::cerr << visible << std::endl;
     std::exit(EXIT_FAILURE);
@@ -70,10 +83,10 @@ void commands(const int ac, const char *av[], std::string* output, filesystem::p
 
 int main(int argc, const char *argv[])
 {
-  std::string output_type("framebuffer");
-  filesystem::path input_file("");
+  bool type_file;
+  filesystem::path input_file;
 
-  commands(argc, argv, &output_type, &input_file);
+  commands(argc, argv, &type_file, &input_file);
 
   float* image_pointer;
   int width;
@@ -83,14 +96,12 @@ int main(int argc, const char *argv[])
   pathtracer->image(&image_pointer, &width, &height);
 
   // pathtracer process here...
-  pathtracer->process();
+  size_t iteration = pathtracer->process();
 
-  if(output_type == "framebuffer")
+  if(!type_file)
   {
     frm::Framebuffer* framebuffer = new frm::Framebuffer();
     framebuffer->init(width, height);
-
-    size_t iteration = pathtracer->iteration();
 
     size_t pixel_count = width * height;
     unsigned char* image = new unsigned char[pixel_count * 3];
@@ -113,12 +124,11 @@ int main(int argc, const char *argv[])
       
       framebuffer->draw();
 
-      iteration = pathtracer->iteration();
       std::string title = "Graphics Environment Iteration: " + std::to_string(iteration);
       framebuffer->title(title);
 
       // pathtracer iterate process here...
-      pathtracer->process();
+      iteration = pathtracer->process();
 
       for(size_t i = 0; i < pixel_count; ++i)
       {
@@ -141,7 +151,7 @@ int main(int argc, const char *argv[])
     delete[] image;
     delete framebuffer;
   }
-  else if(output_type == "file")
+  else
   {
     size_t pixel_count = width * height;
     Imf::Rgba* image = new Imf::Rgba[pixel_count];
@@ -156,7 +166,7 @@ int main(int argc, const char *argv[])
     file->setFrameBuffer(image, 1, width);
     file->writePixels(height);
 
-    std::cout << "Output file named '" << output_file << "' writen to working directory" << std::endl;
+    std::cout << "output file named '" << output_file << "' writen to working directory" << std::endl;
 
     delete[] image;
     delete file;

@@ -78,6 +78,7 @@ Pathtracer::Pathtracer(const std::string &_filename)
   //   m_camera.reset(new GeometricCamera());
   // }
   
+  // // Construct Scene
   // for(YAML::const_iterator setup_element = node_setup.begin(); setup_element != node_setup.end(); ++setup_element)
   // {
   //   std::cout << setup_element->first.as<std::string>() << std::endl;
@@ -90,8 +91,8 @@ Pathtracer::Pathtracer(const std::string &_filename)
   //   }
   // }
 
-  m_scene.reset(new Scene());
-  m_bin.reset(new GlobalBin());
+  m_scene.reset(new Scene);
+  m_bin.reset(new GlobalBin);
 }
 
 void Pathtracer::clear()
@@ -115,7 +116,7 @@ void Pathtracer::image(float** _pixels, int* _width, int* _height)
   *_height = m_image->height;
 }
 
-void Pathtracer::process()
+int Pathtracer::process()
 {
   size_t pixel_count = m_image->width * m_image->height;
   for(size_t i = 0; i < pixel_count; ++i)
@@ -126,6 +127,8 @@ void Pathtracer::process()
   }
 
   m_settings->iteration += 1;
+
+  return m_settings->iteration;
 }
 
 MSC_NAMESPACE_END

@@ -37,9 +37,7 @@ public:
 
   void clear();
   void image(float** _pixels, int* _with, int* _height);
-  void process();
-
-  inline int iteration() const {return m_settings->iteration;}
+  int process();
 
 private:
   boost::scoped_ptr< GlobalBin > m_bin;
