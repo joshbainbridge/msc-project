@@ -17,15 +17,20 @@ SET( CORE_SOURCES
   ${SRC}/core/GlobalBin.cpp
   ${SRC}/core/CameraInterface.cpp
   ${SRC}/core/GeometricCamera.cpp
+  ${SRC}/core/FilterInterface.cpp
+  ${SRC}/core/TentFilter.cpp
+  ${SRC}/core/SamplerInterface.cpp
+  ${SRC}/core/StratifiedSampler.cpp
   # ${SRC}/core/LightInterface.cpp
   # ${SRC}/core/QuadLight.cpp
-  # ${SRC}/core/RenderThread.cpp
+  # ${SRC}/core/ThreadAbstract.cpp
   )
 
 SET( CORE_HEADERS
   ${INC}/core/Pathtracer.h
   ${INC}/core/Constants.h
   ${INC}/core/Common.h
+  ${INC}/core/EmbreeWrapper.h
   ${INC}/core/Settings.h
   ${INC}/core/Image.h
   ${INC}/core/Scene.h
@@ -34,9 +39,13 @@ SET( CORE_HEADERS
   ${INC}/core/GlobalBin.h
   ${INC}/core/CameraInterface.h
   ${INC}/core/GeometricCamera.h
+  ${INC}/core/FilterInterface.h
+  ${INC}/core/TentFilter.h
+  ${INC}/core/SamplerInterface.h
+  ${INC}/core/StratifiedSampler.h
   # ${INC}/core/LightInterface.h
   # ${INC}/core/QuadLight.h
-  # ${INC}/core/RenderThread.h
+  # ${INC}/core/ThreadAbstract.h
   )
 
 SET( FRM_SOURCES

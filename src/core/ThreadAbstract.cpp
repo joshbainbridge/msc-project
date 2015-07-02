@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <core/RenderThread.h>
+#include <core/ThreadAbstract.h>
 
 MSC_NAMESPACE_BEGIN
 
-RenderThread::RenderThread(boost::shared_ptr<Scene> _scene_ptr, boost::shared_ptr<Settings> _settings_ptr, boost::shared_ptr<Image> _image_ptr, boost::shared_ptr<TaskStack> _task_stack_ptr, boost::shared_ptr<IntegratorInterface> _integrator)
+ThreadAbstract::ThreadAbstract(boost::shared_ptr<Scene> _scene_ptr, boost::shared_ptr<Settings> _settings_ptr, boost::shared_ptr<Image> _image_ptr, boost::shared_ptr<TaskStack> _task_stack_ptr, boost::shared_ptr<IntegratorInterface> _integrator)
 {
   m_scene_ptr = _scene_ptr;
   m_settings_ptr = _settings_ptr;
@@ -21,19 +21,19 @@ RenderThread::RenderThread(boost::shared_ptr<Scene> _scene_ptr, boost::shared_pt
 }
 
 //Start self as an independent thread
-void RenderThread::start()
+void ThreadAbstract::start()
 {
-  m_thread = boost::thread(&RenderThread::process, this);
+  m_thread = boost::thread(&ThreadAbstract::process, this);
 }
 
 //Join thread
-void RenderThread::join()
+void ThreadAbstract::join()
 {
   m_thread.join();
 }
 
 //Main render function
-void RenderThread::process()
+void ThreadAbstract::process()
 {
   //if there are tasks available, take a new task from stack
   while (m_task_stack_ptr->takeTask(&m_task))

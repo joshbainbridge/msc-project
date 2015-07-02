@@ -8,6 +8,7 @@ image:
 settings:
   ray depth: 3
   bucket size: 16
+  batch exponent: 25
 
 camera:
   type: Geometric
@@ -16,6 +17,12 @@ camera:
   focal length: 3.7320508075
   focal distance: 1100
   aperture: 200
+
+filter:
+  type: Tent
+
+sampler:
+  type: Stratified
 
 --- # Scene
 

@@ -5,13 +5,13 @@ MSC_NAMESPACE_BEGIN
 GeometricCamera::GeometricCamera()
 {
   m_origin = Vector3f(0.f, 0.f, 0.f);
-  m_dir = Vector3f(0.f, 0.f, 1.f);
+  m_dir = Vector3f(0.f, 0.f, -1.f);
   m_up = Vector3f(0.f, 1.f, 0.f);
   m_right = Vector3f(1.f, 0.f, 0.f);
-  m_focal_length = 1.f;
+  m_focal_length = 5.0f;
   m_ratio = 1.f;
-  m_aperture = 1.f;
   m_focal_distance = 100.f;
+  m_aperture = 10.f;
 }
 
 //Generate initial rays from camera

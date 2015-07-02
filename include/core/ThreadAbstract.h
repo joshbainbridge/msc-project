@@ -1,5 +1,5 @@
-#ifndef _RENDERTHREAD_H_
-#define _RENDERTHREAD_H_
+#ifndef _THREADABSTRACT_H_
+#define _THREADABSTRACT_H_
 
 #include <boost/thread.hpp>
 #include <boost/weak_ptr.hpp>
@@ -12,13 +12,13 @@
 
 MSC_NAMESPACE_BEGIN
 
-class RenderThread
+class ThreadAbstract
 { 
 public:
-  RenderThread(
+  ThreadAbstract(
       boost::weak_ptr<Scene> _scene_ptr,
       boost::weak_ptr<Settings> _settings_ptr,
-      boost::weak_ptr<Image> _image_ptr,
+      boost::weak_ptr<Image> _image_ptr
       // boost::weak_ptr<TaskStack> _task_stack_ptr,
       // boost::weak_ptr<IntegratorInterface> _integrator
       );

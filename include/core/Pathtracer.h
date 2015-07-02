@@ -7,11 +7,14 @@
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
+#include <core/EmbreeWrapper.h>
 #include <core/GlobalBin.h>
 #include <core/Settings.h>
-#include <core/CameraInterface.h>
 #include <core/Image.h>
 #include <core/Scene.h>
+#include <core/CameraInterface.h>
+#include <core/FilterInterface.h>
+#include <core/SamplerInterface.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
@@ -42,9 +45,11 @@ public:
 private:
   boost::scoped_ptr< GlobalBin > m_bin;
   boost::scoped_ptr< Settings > m_settings;
-  boost::scoped_ptr< CameraInterface > m_camera;
   boost::scoped_ptr< Image > m_image;
   boost::scoped_ptr< Scene > m_scene;
+  boost::scoped_ptr< CameraInterface > m_camera;
+  boost::scoped_ptr< FilterInterface > m_filter;
+  boost::scoped_ptr< SamplerInterface > m_sampler;
 
   tbb::concurrent_queue< CameraTask > m_camera_queue;
   tbb::concurrent_queue< SurfaceTask > m_surface_queue;

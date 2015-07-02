@@ -18,4 +18,7 @@
 #define MSC_NAMESPACE_BEGIN namespace msc {
 #define MSC_NAMESPACE_END }
 
+#define YAML_NAMESPACE_BEGIN namespace YAML {
+#define YAML_NAMESPACE_END }
+
 #endif

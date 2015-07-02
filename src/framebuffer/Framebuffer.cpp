@@ -185,7 +185,7 @@ void Framebuffer::createContext()
   glfwWindowHint(GLFW_SAMPLES, 2);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   
-  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Graphics Environment", NULL, NULL);
+  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Pathtracer Iteration: 0", NULL, NULL);
 
   glfwMakeContextCurrent(m_window);
   glfwSwapInterval(true);

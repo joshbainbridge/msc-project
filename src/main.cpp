@@ -124,7 +124,7 @@ int main(int argc, const char *argv[])
       
       framebuffer->draw();
 
-      std::string title = "Graphics Environment Iteration: " + std::to_string(iteration);
+      std::string title = "Pathtracer Iteration: " + std::to_string(iteration);
       framebuffer->title(title);
 
       // pathtracer iterate process here...
