@@ -3,8 +3,6 @@
 
 #include <vector>
 
-#include <yaml-cpp/yaml.h>
-
 #include <core/Common.h>
 
 MSC_NAMESPACE_BEGIN
@@ -15,9 +13,10 @@ struct Sample
   float r, g, b;
 };
 
-struct Pixel
+union Pixel
 {
-  float r, g, b;
+  struct {float r, g, b;};
+  float v[3];
 };
 
 struct Image

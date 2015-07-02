@@ -19,4 +19,28 @@ private:
 
 MSC_NAMESPACE_END
 
+YAML_NAMESPACE_BEGIN
+
+template<> struct convert<msc::TentFilter>
+{
+  static Node encode(const msc::TentFilter& rhs)
+  {
+    Node node;
+    node["filter"]["type"] = "Tent";
+    return node;
+  }
+
+  static bool decode(const Node& node, msc::TentFilter& rhs)
+  {
+    if(!node.IsMap() || node.size() != 1)
+    {
+      return false;
+    }
+    
+    return true;
+  }
+};
+
+YAML_NAMESPACE_END
+
 #endif

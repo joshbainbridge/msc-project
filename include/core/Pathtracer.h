@@ -56,6 +56,8 @@ private:
   tbb::concurrent_queue< std::string > m_batch_queue;
   
   RandomGenerator m_random;
+
+  void construct(const std::string &_filename);
 };
 
 MSC_NAMESPACE_END

@@ -8,6 +8,7 @@ image:
 settings:
   ray depth: 3
   bucket size: 16
+  bin exponent: 11
   batch exponent: 25
 
 camera:

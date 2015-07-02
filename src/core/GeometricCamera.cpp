@@ -2,23 +2,11 @@
 
 MSC_NAMESPACE_BEGIN
 
-GeometricCamera::GeometricCamera()
-{
-  m_origin = Vector3f(0.f, 0.f, 0.f);
-  m_dir = Vector3f(0.f, 0.f, -1.f);
-  m_up = Vector3f(0.f, 1.f, 0.f);
-  m_right = Vector3f(1.f, 0.f, 0.f);
-  m_focal_length = 5.0f;
-  m_ratio = 1.f;
-  m_focal_distance = 100.f;
-  m_aperture = 10.f;
-}
-
 //Generate initial rays from camera
-void GeometricCamera::makeSample(const float xpos, const float ypos, Vector3f *ray_origin, Vector3f *ray_direction, RandomGenerator &_random_generator) const
+void GeometricCamera::makeSample(const float xpos, const float ypos, const float ratio, Vector3f *ray_origin, Vector3f *ray_direction, RandomGenerator &_random_generator) const
 {
   //Find position on film plane taking into account image ratio
-  Vector3f film_position = m_origin + (m_right * m_ratio * xpos) + (m_up * ypos);
+  Vector3f film_position = m_origin + (m_right * ratio * xpos) + (m_up * ypos);
 
   //Construct nodal position
   Vector3f nodal_point = m_origin + (m_dir * m_focal_length);
