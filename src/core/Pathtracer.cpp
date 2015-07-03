@@ -1,8 +1,8 @@
-#include <vector>
-
-#include <yaml-cpp/yaml.h>
+#include <boost/thread.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <core/Pathtracer.h>
+#include <core/LocalBin.h>
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
@@ -113,18 +113,121 @@ void Pathtracer::construct(const std::string &_filename)
     }
   }
   
-  // // Construct Scene
-  // for(YAML::const_iterator setup_element = node_setup.begin(); setup_element != node_setup.end(); ++setup_element)
-  // {
-  //   std::cout << setup_element->first.as<std::string>() << std::endl;
+  for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
+  {
+    YAML::Node first = scene_iterator->first;
+    YAML::Node second = scene_iterator->second;
 
-  //   YAML::Node node_element = setup_element->second;
-  //   for(YAML::const_iterator setup_value = node_element.begin(); setup_value != node_element.end(); ++setup_value)
-  //   {
-  //     if(setup_value->second.IsScalar())
-  //       std::cout << "  " << setup_value->first.as<std::string>() << ": " << setup_value->second.as<std::string>() << std::endl;
-  //   }
-  // }
+    if(first.as< std::string >() == "object")
+    {
+      if(second["type"].as< std::string >() == "Polygon")
+      {
+        // PolygonObject* polygon_object = new PolygonObject();
+        // *polygon_object = second.as<PolygonObject>();
+        // m_scene.add(polygon_object);
+      }
+    }
+
+    if(first.as< std::string >() == "light")
+    {
+      if(second["type"].as< std::string >() == "Quad")
+      {
+        // PolygonObject* polygon_object = new PolygonObject();
+        // *polygon_object = second.as<PolygonObject>();
+        // m_scene.add(polygon_object);
+      }
+    }
+
+    if(first.as< std::string >() == "material")
+    {
+      if(second["type"].as< std::string >() == "Lambert")
+      {
+        // PolygonObject* polygon_object = new PolygonObject();
+        // *polygon_object = second.as<PolygonObject>();
+        // m_scene.add(polygon_object);
+      }
+    }
+  }
+}
+
+void Pathtracer::createThreads()
+{
+  m_nthreads = boost::thread::hardware_concurrency();
+
+  if(m_nthreads > 1)
+    std::cout << m_nthreads << " supported threads found" << std::endl;
+
+  if(!(m_nthreads > 1))
+    std::cout << "Single thread found, system will function as a serial operation" << std::endl;
+
+  for (size_t i = 0; i < m_nthreads; ++i)
+  {
+    boost::shared_ptr< LocalBin > local_bin(new LocalBin());
+    m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(
+      m_camera_queue,
+      local_bin,
+      m_bin,
+      m_camera,
+      m_sampler
+      )));
+    m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
+      m_surface_queue,
+      local_bin,
+      m_bin,
+      m_scene,
+      m_image
+      )));
+  }
+}
+
+void Pathtracer::createCameraTasks()
+{
+  size_t bucket_size = m_settings->bucket_size;
+  size_t width = m_image->width;
+  size_t height = m_image->height;
+  size_t task_count_x = ceil(width / static_cast<float>(bucket_size));
+  size_t task_count_y = ceil(height / static_cast<float>(bucket_size));
+  size_t task_count = task_count_x * task_count_y;
+
+  std::cout << task_count << " render tasks created" << std::endl;
+
+  for (size_t i = 0; i < task_count_x; ++i)
+  {
+    for (size_t j = 0; j < task_count_y; ++j)
+    {
+      //Check for any pixels left after resolution division with bucket size
+      size_t task_width = bucket_size;
+      if ((i * bucket_size + bucket_size) > task_width)
+        task_width = task_width - (i * bucket_size);
+
+      //Check for any pixels left after resolution division with bucket size
+      size_t task_height = bucket_size;
+      if ((j * bucket_size + bucket_size) > task_height)
+        task_height = task_height - (j * bucket_size);
+
+      CameraTask task;
+      task.begin_x = i * bucket_size;
+      task.begin_y = j * bucket_size;
+      task.end_x = task.begin_x + task_width;
+      task.end_y = task.begin_y + task_height;
+
+      m_camera_queue.push(task);
+    }
+  }
+}
+
+void Pathtracer::createSurfaceTasks()
+{
+
+}
+
+void Pathtracer::runCameraThreads()
+{
+  for (int i = 0; i < m_nthreads; ++i)
+    m_camera_threads[i]->start();
+
+  for (int i = 0; i < m_nthreads; ++i)
+    m_camera_threads[i]->join();
 }
 
 Pathtracer::Pathtracer(const std::string &_filename)
@@ -133,6 +236,17 @@ Pathtracer::Pathtracer(const std::string &_filename)
   _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
   construct(_filename);
+
+  createThreads();
+  createCameraTasks(); // Move this to process method
+}
+
+void Pathtracer::image(float** _pixels, int* _width, int* _height)
+{
+  *_pixels = &(m_image->pixels[0].v[0]);
+
+  *_width = m_image->width;
+  *_height = m_image->height;
 }
 
 void Pathtracer::clear()
@@ -148,14 +262,6 @@ void Pathtracer::clear()
   m_settings->iteration = 0;
 }
 
-void Pathtracer::image(float** _pixels, int* _width, int* _height)
-{
-  *_pixels = &(m_image->pixels[0].v[0]);
-
-  *_width = m_image->width;
-  *_height = m_image->height;
-}
-
 int Pathtracer::process()
 {
   size_t pixel_count = m_image->width * m_image->height;
@@ -167,7 +273,6 @@ int Pathtracer::process()
   }
 
   m_settings->iteration += 1;
-
   return m_settings->iteration;
 }
 

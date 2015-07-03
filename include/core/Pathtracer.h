@@ -2,13 +2,16 @@
 #define _PATHTRACER_H_
 
 #include <string>
+#include <vector>
 
-#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
 #include <core/EmbreeWrapper.h>
 #include <core/GlobalBin.h>
+#include <core/CameraThread.h>
+#include <core/SurfaceThread.h>
 #include <core/Settings.h>
 #include <core/Image.h>
 #include <core/Scene.h>
@@ -19,37 +22,28 @@
 
 MSC_NAMESPACE_BEGIN
 
-struct CameraTask
-{
-  size_t begin_x;
-  size_t begin_y;
-  size_t end_x;
-  size_t end_y;
-};
-
-struct SurfaceTask
-{
-  size_t begin;
-  size_t end;
-};
-
 class Pathtracer
 {
 public:
   Pathtracer(const std::string &_filename);
 
-  void clear();
   void image(float** _pixels, int* _with, int* _height);
+  void clear();
+
   int process();
 
 private:
-  boost::scoped_ptr< GlobalBin > m_bin;
-  boost::scoped_ptr< Settings > m_settings;
-  boost::scoped_ptr< Image > m_image;
-  boost::scoped_ptr< Scene > m_scene;
-  boost::scoped_ptr< CameraInterface > m_camera;
-  boost::scoped_ptr< FilterInterface > m_filter;
-  boost::scoped_ptr< SamplerInterface > m_sampler;
+  boost::shared_ptr< GlobalBin > m_bin;
+  boost::shared_ptr< Settings > m_settings;
+  boost::shared_ptr< Image > m_image;
+  boost::shared_ptr< Scene > m_scene;
+  boost::shared_ptr< CameraInterface > m_camera;
+  boost::shared_ptr< FilterInterface > m_filter;
+  boost::shared_ptr< SamplerInterface > m_sampler;
+
+  std::vector< boost::shared_ptr< CameraThread > > m_camera_threads;
+  std::vector< boost::shared_ptr< SurfaceThread > > m_surface_threads;
+  size_t m_nthreads;
 
   tbb::concurrent_queue< CameraTask > m_camera_queue;
   tbb::concurrent_queue< SurfaceTask > m_surface_queue;
@@ -58,6 +52,10 @@ private:
   RandomGenerator m_random;
 
   void construct(const std::string &_filename);
+  void createThreads();
+  void createCameraTasks();
+  void createSurfaceTasks();
+  void runCameraThreads();
 };
 
 MSC_NAMESPACE_END

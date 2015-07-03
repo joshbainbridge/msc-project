@@ -20,11 +20,8 @@ template < typename type > bool compare(const type _a, const type _b)
 
 template < typename type > void cartesianToSphericalCoord(const type _x, const type _y, const type _z, float *azimuthal, float *polar)
 {
-  float x = static_cast<float>(_x);
-  float y = static_cast<float>(_y);
-  float z = static_cast<float>(_z);
-  *polar = atan(y / x);
-  *azimuthal = atan(sqrt(x * x + y * y) / z);
+  *polar = atan(_y / _x);
+  *azimuthal = atan(sqrt(_x * _x + _y * _y) / _z);
 }
 
 template < typename type > void sphericalToCartesianCoord(const type _azimuthal, const type _polar, float *x, float *y, float *z)

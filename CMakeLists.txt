@@ -23,7 +23,8 @@ SET( CORE_SOURCES
   ${SRC}/core/StratifiedSampler.cpp
   # ${SRC}/core/LightInterface.cpp
   # ${SRC}/core/QuadLight.cpp
-  # ${SRC}/core/ThreadAbstract.cpp
+  ${SRC}/core/CameraThread.cpp
+  ${SRC}/core/SurfaceThread.cpp
   )
 
 SET( CORE_HEADERS
@@ -45,7 +46,8 @@ SET( CORE_HEADERS
   ${INC}/core/StratifiedSampler.h
   # ${INC}/core/LightInterface.h
   # ${INC}/core/QuadLight.h
-  # ${INC}/core/ThreadAbstract.h
+  ${INC}/core/CameraThread.h
+  ${INC}/core/SurfaceThread.h
   )
 
 SET( FRM_SOURCES

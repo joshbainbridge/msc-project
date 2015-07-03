@@ -1,8 +1,6 @@
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <core/Common.h>
 
 MSC_NAMESPACE_BEGIN
