@@ -9,12 +9,7 @@ MSC_NAMESPACE_BEGIN
 class StratifiedSampler : public SamplerInterface
 {
 public:
-  StratifiedSampler();
-
-  void virtualFunc(const float value_one, const float value_two) const;
-
-private:
-  float m_other_variable;
+  void sample(const int _base, RandomGenerator* _random, float* _output) const;
 };
 
 MSC_NAMESPACE_END
@@ -33,9 +28,7 @@ template<> struct convert<msc::StratifiedSampler>
   static bool decode(const Node& node, msc::StratifiedSampler& rhs)
   {
     if(!node.IsMap() || node.size() != 1)
-    {
       return false;
-    }
     
     return true;
   }

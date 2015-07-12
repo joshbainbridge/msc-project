@@ -33,9 +33,7 @@ template<> struct convert<msc::TentFilter>
   static bool decode(const Node& node, msc::TentFilter& rhs)
   {
     if(!node.IsMap() || node.size() != 1)
-    {
       return false;
-    }
     
     return true;
   }

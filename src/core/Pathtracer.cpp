@@ -25,6 +25,7 @@ void Pathtracer::construct(const std::string &_filename)
     image->width = 700;
     image->height = 500;
     image->base = 8;
+    image->iteration = 0;
 
     if(node_setup["image"])
       *image = node_setup["image"].as<Image>();
@@ -49,9 +50,9 @@ void Pathtracer::construct(const std::string &_filename)
 
     settings->ray_depth = 4;
     settings->bucket_size = 16;
+    settings->shading_size = 4096;
     settings->bin_exponent = 11;
     settings->batch_exponent = 25;
-    settings->iteration = 0;
 
     if(node_setup["settings"])
       *settings = node_setup["settings"].as<Settings>();
@@ -160,18 +161,23 @@ void Pathtracer::createThreads()
   if(!(m_nthreads > 1))
     std::cout << "Single thread found, system will function as a serial operation" << std::endl;
 
-  for (size_t i = 0; i < m_nthreads; ++i)
+  for(size_t i = 0; i < m_nthreads; ++i)
   {
     boost::shared_ptr< LocalBin > local_bin(new LocalBin());
+    for(size_t iterator_bin = 0; iterator_bin < 6; ++iterator_bin)
+    {
+      local_bin->index[iterator_bin] = 0;
+      local_bin->bin[iterator_bin].resize(pow(2, m_settings->bin_exponent));
+    }
+    
     m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(
-      m_camera_queue,
       local_bin,
       m_bin,
       m_camera,
-      m_sampler
+      m_sampler,
+      m_image
       )));
     m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
-      m_surface_queue,
       local_bin,
       m_bin,
       m_scene,
@@ -183,27 +189,22 @@ void Pathtracer::createThreads()
 void Pathtracer::createCameraTasks()
 {
   size_t bucket_size = m_settings->bucket_size;
-  size_t width = m_image->width;
-  size_t height = m_image->height;
-  size_t task_count_x = ceil(width / static_cast<float>(bucket_size));
-  size_t task_count_y = ceil(height / static_cast<float>(bucket_size));
-  size_t task_count = task_count_x * task_count_y;
+  size_t task_count_x = ceil(m_image->width / static_cast<float>(bucket_size));
+  size_t task_count_y = ceil(m_image->height / static_cast<float>(bucket_size));
 
-  std::cout << task_count << " render tasks created" << std::endl;
-
-  for (size_t i = 0; i < task_count_x; ++i)
+  for(size_t i = 0; i < task_count_x; ++i)
   {
-    for (size_t j = 0; j < task_count_y; ++j)
+    for(size_t j = 0; j < task_count_y; ++j)
     {
       //Check for any pixels left after resolution division with bucket size
       size_t task_width = bucket_size;
-      if ((i * bucket_size + bucket_size) > task_width)
-        task_width = task_width - (i * bucket_size);
+      if((i * bucket_size + bucket_size) > m_image->width)
+        task_width = m_image->width - (i * bucket_size);
 
       //Check for any pixels left after resolution division with bucket size
       size_t task_height = bucket_size;
-      if ((j * bucket_size + bucket_size) > task_height)
-        task_height = task_height - (j * bucket_size);
+      if((j * bucket_size + bucket_size) > m_image->height)
+        task_height = m_image->height - (j * bucket_size);
 
       CameraTask task;
       task.begin_x = i * bucket_size;
@@ -214,19 +215,49 @@ void Pathtracer::createCameraTasks()
       m_camera_queue.push(task);
     }
   }
+
+  // std::cout << task_count_x * task_count_y << " render tasks created" << std::endl;
 }
 
 void Pathtracer::createSurfaceTasks()
 {
+  // size_t m_begin = 0;
+  // size_t m_end = 2048;
+  // while(m_array[m_begin] != m_array[m_end - 1])
+  // {
+  //   size_t s = m_begin;
+  //   for(size_t i = m_begin; i < (m_end - 1); ++i)
+  //   {
+  //     if(m_array[i] != m_array[i + 1])
+  //     {
+  //       s = i + 1;
+  //       break;
+  //     }
+  //   }
 
+  //   m_surface_queue.push(task);
+  // }
+  // else if((m_end - m_begin) > 4096)
+  // {
+  //   size_t s = (m_end - m_begin) / 2;
+
+  //   NewTask &lrange = *new( tbb::task::allocate_child() ) NewTask(m_begin, s, m_array);
+  //   NewTask &rrange = *new( tbb::task::allocate_child() ) NewTask(s, m_end, m_array);
+
+  //   tbb::task::set_ref_count(3);
+    
+  //   tbb::task::spawn(lrange);
+  //   tbb::task::spawn(rrange);
+  //   tbb::task::wait_for_all();
+  // }
 }
 
 void Pathtracer::runCameraThreads()
 {
-  for (int i = 0; i < m_nthreads; ++i)
-    m_camera_threads[i]->start();
+  for(int i = 0; i < m_nthreads; ++i)
+    m_camera_threads[i]->start(&m_camera_queue);
 
-  for (int i = 0; i < m_nthreads; ++i)
+  for(int i = 0; i < m_nthreads; ++i)
     m_camera_threads[i]->join();
 }
 
@@ -238,7 +269,6 @@ Pathtracer::Pathtracer(const std::string &_filename)
   construct(_filename);
 
   createThreads();
-  createCameraTasks(); // Move this to process method
 }
 
 void Pathtracer::image(float** _pixels, int* _width, int* _height)
@@ -259,7 +289,7 @@ void Pathtracer::clear()
     m_image->pixels[i].b = 0.f;
   }
 
-  m_settings->iteration = 0;
+  m_image->iteration = 0;
 }
 
 int Pathtracer::process()
@@ -272,8 +302,11 @@ int Pathtracer::process()
     m_image->pixels[i].b += m_random.getSample();
   }
 
-  m_settings->iteration += 1;
-  return m_settings->iteration;
+  createCameraTasks();
+  runCameraThreads();
+
+  m_image->iteration += 1;
+  return m_image->iteration;
 }
 
 MSC_NAMESPACE_END

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
+#include <algorithm>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -31,19 +32,19 @@ template < typename type > void sphericalToCartesianCoord(const type _azimuthal,
   *z = cos(_azimuthal);
 }
 
-template < typename t_origin, typename t_direction > struct Ray
-{
-  t_origin origin;
-  t_direction dir;
-};
+// template < typename t_origin, typename t_direction > struct Ray
+// {
+//   t_origin origin;
+//   t_direction dir;
+// };
 
 typedef Eigen::Matrix< float, 2, 1 > Vector2f;
 typedef Eigen::Matrix< float, 3, 1 > Vector3f;
 typedef Eigen::Matrix< float, 4, 1 > Vector4f;
 typedef Eigen::Matrix< float, 4, 4 > TransMatrix;
-typedef Ray< Vector2f, Vector2f > Ray2f;
-typedef Ray< Vector3f, Vector3f > Ray3f;
-typedef Ray< Vector4f, Vector4f > Ray4f;
+// typedef Ray< Vector2f, Vector2f > Ray2f;
+// typedef Ray< Vector3f, Vector3f > Ray3f;
+// typedef Ray< Vector4f, Vector4f > Ray4f;
 typedef Eigen::Array< float, 3, 1 > Colour3f;
 
 MSC_NAMESPACE_END

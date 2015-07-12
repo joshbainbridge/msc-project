@@ -3,11 +3,12 @@
 image:
   width: 700
   height: 500
-  sample base: 4
+  sample base: 2
 
 settings:
   ray depth: 3
   bucket size: 16
+  shading size: 4096
   bin exponent: 11
   batch exponent: 25
 
@@ -17,7 +18,7 @@ camera:
   direction: [ 0, 0, -1 ]
   focal length: 3.7320508075
   focal distance: 1100
-  aperture: 200
+  aperture: 3
 
 filter:
   type: Tent

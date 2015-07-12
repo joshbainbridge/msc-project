@@ -19,7 +19,6 @@ SET( CORE_SOURCES
   ${SRC}/core/GeometricCamera.cpp
   ${SRC}/core/FilterInterface.cpp
   ${SRC}/core/TentFilter.cpp
-  ${SRC}/core/SamplerInterface.cpp
   ${SRC}/core/StratifiedSampler.cpp
   # ${SRC}/core/LightInterface.cpp
   # ${SRC}/core/QuadLight.cpp
@@ -48,6 +47,7 @@ SET( CORE_HEADERS
   # ${INC}/core/QuadLight.h
   ${INC}/core/CameraThread.h
   ${INC}/core/SurfaceThread.h
+  ${INC}/core/Ray.h
   )
 
 SET( FRM_SOURCES

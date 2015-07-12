@@ -24,6 +24,7 @@ struct Image
   size_t width;
   size_t height;
   size_t base;
+  size_t iteration;
 
   std::vector< Sample > samples;
   std::vector< Pixel > pixels;
@@ -47,13 +48,12 @@ template<> struct convert<msc::Image>
   static bool decode(const Node& node, msc::Image& rhs)
   {
     if(!node.IsMap() || node.size() != 3)
-    {
       return false;
-    }
 
     rhs.width = node["width"].as<int>();
     rhs.height = node["height"].as<int>();
     rhs.base = node["sample base"].as<int>();
+    rhs.iteration = 0;
     return true;
   }
 };

@@ -15,13 +15,13 @@ public:
   inline void aperture(const float _aperture){m_aperture = _aperture;}
   inline void focalDistance(const float _focal_distance){m_focal_distance = _focal_distance;}
 
-  void makeSample(const float xpos, const float ypos, const float ratio, Vector3f *ray_origin, Vector3f *ray_direction, RandomGenerator &_random_generator) const;
+  void sample(const int _count, float* _positions, RandomGenerator* _random, Ray* _ouput) const;
 
 private:
   float m_aperture;
   float m_focal_distance;
 
-  Vector2f rejection_sample_circle(RandomGenerator &_random_generator) const;
+  Vector2f rejectionSampling(RandomGenerator* _random) const;
 };
 
 MSC_NAMESPACE_END
@@ -45,9 +45,7 @@ template<> struct convert<msc::GeometricCamera>
   static bool decode(const Node& node, msc::GeometricCamera& rhs)
   {
     if(!node.IsMap() || node.size() != 6)
-    {
       return false;
-    }
 
     rhs.origin(node["origin"].as<msc::Vector3f>());
     rhs.direction(node["direction"].as<msc::Vector3f>());
