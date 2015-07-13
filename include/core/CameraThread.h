@@ -6,8 +6,8 @@
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
-#include <core/LocalBin.h>
-#include <core/GlobalBin.h>
+#include <core/Bin.h>
+#include <core/Batch.h>
 #include <core/CameraInterface.h>
 #include <core/SamplerInterface.h>
 #include <core/Image.h>
@@ -27,14 +27,14 @@ class CameraThread
 { 
 public:
   CameraThread(
-    boost::shared_ptr< LocalBin > _local_bin,
-    boost::shared_ptr< GlobalBin > _global_bin,
+    boost::shared_ptr< Bin > _local_bin,
+    boost::shared_ptr< Batch > _batch,
     boost::shared_ptr< CameraInterface > _camera,
     boost::shared_ptr< SamplerInterface > _sampler,
     boost::shared_ptr< Image > _image
     )
     : m_local_bin(_local_bin)
-    , m_global_bin(_global_bin)
+    , m_batch(_batch)
     , m_camera(_camera)
     , m_sampler(_sampler)
     , m_image(_image)
@@ -46,8 +46,8 @@ public:
 
 private:
   boost::thread m_thread;
-  boost::shared_ptr< LocalBin > m_local_bin;
-  boost::shared_ptr< GlobalBin > m_global_bin;
+  boost::shared_ptr< Bin > m_local_bin;
+  boost::shared_ptr< Batch > m_batch;
   boost::shared_ptr< CameraInterface > m_camera;
   boost::shared_ptr< SamplerInterface > m_sampler;
   boost::shared_ptr< Image > m_image;

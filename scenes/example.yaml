@@ -10,7 +10,7 @@ settings:
   bucket size: 16
   shading size: 4096
   bin exponent: 11
-  batch exponent: 25
+  batch exponent: 15
 
 camera:
   type: Geometric

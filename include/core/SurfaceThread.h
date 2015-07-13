@@ -6,8 +6,8 @@
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
-#include <core/LocalBin.h>
-#include <core/GlobalBin.h>
+#include <core/Bin.h>
+#include <core/Batch.h>
 #include <core/Scene.h>
 #include <core/Image.h>
 #include <core/RandomGenerator.h>
@@ -24,13 +24,13 @@ class SurfaceThread
 { 
 public:
   SurfaceThread(
-    boost::shared_ptr< LocalBin > _local_bin,
-    boost::shared_ptr< GlobalBin > _global_bin,
+    boost::shared_ptr< Bin > _local_bin,
+    boost::shared_ptr< Batch > _batch,
     boost::shared_ptr< Scene > _scene,
     boost::shared_ptr< Image > _image
     )
     : m_local_bin(_local_bin)
-    , m_global_bin(_global_bin)
+    , m_batch(_batch)
     , m_scene(_scene)
     , m_image(_image)
   {;}
@@ -41,8 +41,8 @@ public:
 
 private:
   boost::thread m_thread;
-  boost::shared_ptr< LocalBin > m_local_bin;
-  boost::shared_ptr< GlobalBin > m_global_bin;
+  boost::shared_ptr< Bin > m_local_bin;
+  boost::shared_ptr< Batch > m_batch;
   boost::shared_ptr< Scene > m_scene;
   boost::shared_ptr< Image > m_image;
 

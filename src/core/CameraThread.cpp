@@ -45,9 +45,9 @@ void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
           int axis = (fabs(rays[iterator_rays].direction[max]) < fabs(rays[iterator_rays].direction[2])) ? 2 : max;
           int cardinal = (rays[iterator_rays].direction[axis] < 0.f) ? axis : axis + 3;
 
-          if(m_local_bin->index[cardinal] == m_local_bin->bin[cardinal].size())
+          if(m_local_bin->index[cardinal] == m_local_bin->size)
           {
-            // Add bin to global state
+            m_batch->add(m_local_bin->size, cardinal, &(m_local_bin->bin[cardinal][0]));
             m_local_bin->index[cardinal] = 0;
           }
 

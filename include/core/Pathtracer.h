@@ -9,7 +9,7 @@
 
 #include <core/Common.h>
 #include <core/EmbreeWrapper.h>
-#include <core/GlobalBin.h>
+#include <core/Batch.h>
 #include <core/CameraThread.h>
 #include <core/SurfaceThread.h>
 #include <core/Settings.h>
@@ -33,7 +33,7 @@ public:
   int process();
 
 private:
-  boost::shared_ptr< GlobalBin > m_bin;
+  boost::shared_ptr< Batch > m_batch;
   boost::shared_ptr< Settings > m_settings;
   boost::shared_ptr< Image > m_image;
   boost::shared_ptr< Scene > m_scene;
@@ -47,7 +47,6 @@ private:
 
   tbb::concurrent_queue< CameraTask > m_camera_queue;
   tbb::concurrent_queue< SurfaceTask > m_surface_queue;
-  tbb::concurrent_queue< std::string > m_batch_queue;
   
   RandomGenerator m_random;
 

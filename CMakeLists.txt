@@ -13,8 +13,7 @@ SET( THR thirdparty )
 SET( CORE_SOURCES
   ${SRC}/core/Pathtracer.cpp
   ${SRC}/core/RandomGenerator.cpp
-  ${SRC}/core/LocalBin.cpp
-  ${SRC}/core/GlobalBin.cpp
+  ${SRC}/core/Batch.cpp
   ${SRC}/core/CameraInterface.cpp
   ${SRC}/core/GeometricCamera.cpp
   ${SRC}/core/FilterInterface.cpp
@@ -35,8 +34,8 @@ SET( CORE_HEADERS
   ${INC}/core/Image.h
   ${INC}/core/Scene.h
   ${INC}/core/RandomGenerator.h
-  ${INC}/core/LocalBin.h
-  ${INC}/core/GlobalBin.h
+  ${INC}/core/Bin.h
+  ${INC}/core/Batch.h
   ${INC}/core/CameraInterface.h
   ${INC}/core/GeometricCamera.h
   ${INC}/core/FilterInterface.h

@@ -1,19 +1,16 @@
 #include <boost/thread.hpp>
-#include <boost/weak_ptr.hpp>
 
 #include <core/Pathtracer.h>
-#include <core/LocalBin.h>
+#include <core/Bin.h>
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
+#include <core/Ray.h>
 
 MSC_NAMESPACE_BEGIN
 
 void Pathtracer::construct(const std::string &_filename)
 {
-  m_scene.reset(new Scene);
-  m_bin.reset(new GlobalBin);
-
   std::vector<YAML::Node> node_root = YAML::LoadAllFromFile(_filename);
 
   YAML::Node node_setup = node_root[0];
@@ -113,6 +110,10 @@ void Pathtracer::construct(const std::string &_filename)
       }
     }
   }
+
+  m_batch.reset(new Batch);
+
+  m_scene.reset(new Scene);
   
   for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
   {
@@ -154,6 +155,7 @@ void Pathtracer::construct(const std::string &_filename)
 void Pathtracer::createThreads()
 {
   m_nthreads = boost::thread::hardware_concurrency();
+//  m_nthreads = 1;
 
   if(m_nthreads > 1)
     std::cout << m_nthreads << " supported threads found" << std::endl;
@@ -163,23 +165,24 @@ void Pathtracer::createThreads()
 
   for(size_t i = 0; i < m_nthreads; ++i)
   {
-    boost::shared_ptr< LocalBin > local_bin(new LocalBin());
+    boost::shared_ptr< Bin > local_bin(new Bin());
+    local_bin->size = pow(2, m_settings->bin_exponent);
     for(size_t iterator_bin = 0; iterator_bin < 6; ++iterator_bin)
     {
+      local_bin->bin[iterator_bin] = boost::shared_ptr< Ray[] >(new Ray[local_bin->size]);
       local_bin->index[iterator_bin] = 0;
-      local_bin->bin[iterator_bin].resize(pow(2, m_settings->bin_exponent));
     }
     
     m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(
       local_bin,
-      m_bin,
+      m_batch,
       m_camera,
       m_sampler,
       m_image
       )));
     m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
       local_bin,
-      m_bin,
+      m_batch,
       m_scene,
       m_image
       )));
@@ -302,8 +305,12 @@ int Pathtracer::process()
     m_image->pixels[i].b += m_random.getSample();
   }
 
+  m_batch->construct(m_settings->batch_exponent);
+
   createCameraTasks();
   runCameraThreads();
+
+  m_batch->clear();
 
   m_image->iteration += 1;
   return m_image->iteration;
