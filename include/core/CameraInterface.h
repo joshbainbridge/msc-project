@@ -2,7 +2,7 @@
 #define _CAMERAINTERFACE_H_
 
 #include <core/Common.h>
-#include <core/Ray.h>
+#include <core/RayCompressed.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
@@ -22,7 +22,7 @@ public:
   void origin(const Vector3f &_origin){m_origin = _origin;}
   void focalLength(const float _focal_length){m_focal_length = _focal_length;}
 
-  virtual void sample(const int _count, float* _positions, RandomGenerator* _random, Ray* _ouput) const =0;
+  virtual void sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const =0;
 
 protected:
   //Protected variables

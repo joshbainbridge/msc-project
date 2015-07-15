@@ -32,6 +32,14 @@ template < typename type > void sphericalToCartesianCoord(const type _azimuthal,
   *z = cos(_azimuthal);
 }
 
+template < typename type, int size > struct BoundingBox
+{
+  type min[size];
+  type max[size];
+};
+
+typedef BoundingBox< float, 3 > BoundingBox3f;
+
 // template < typename t_origin, typename t_direction > struct Ray
 // {
 //   t_origin origin;

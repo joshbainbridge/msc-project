@@ -23,6 +23,8 @@ SET( CORE_SOURCES
   # ${SRC}/core/QuadLight.cpp
   ${SRC}/core/CameraThread.cpp
   ${SRC}/core/SurfaceThread.cpp
+  ${SRC}/core/RaySort.cpp
+  ${SRC}/core/RayIntersect.cpp
   )
 
 SET( CORE_HEADERS
@@ -46,7 +48,10 @@ SET( CORE_HEADERS
   # ${INC}/core/QuadLight.h
   ${INC}/core/CameraThread.h
   ${INC}/core/SurfaceThread.h
-  ${INC}/core/Ray.h
+  ${INC}/core/RayCompressed.h
+  ${INC}/core/RayUncompressed.h
+  ${INC}/core/RaySort.h
+  ${INC}/core/RayIntersect.h
   )
 
 SET( FRM_SOURCES

@@ -2,14 +2,13 @@
 #define _SCENE_H_
 
 #include <core/Common.h>
+#include <core/EmbreeWrapper.h>
 
 MSC_NAMESPACE_BEGIN
 
-class Scene
+struct Scene
 {
-public:
-  // Constructe but not mutated
-private:
+  RTCScene rtc_scene;
   // Lights, things and materials
 };
 

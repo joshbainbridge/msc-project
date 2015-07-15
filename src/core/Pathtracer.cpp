@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <boost/thread.hpp>
 
 #include <core/Pathtracer.h>
@@ -5,7 +7,10 @@
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
-#include <core/Ray.h>
+#include <core/RayCompressed.h>
+#include <core/RayUncompressed.h>
+#include <core/RaySort.h>
+#include <core/RayIntersect.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -27,7 +32,7 @@ void Pathtracer::construct(const std::string &_filename)
     if(node_setup["image"])
       *image = node_setup["image"].as<Image>();
 
-    size_t sample_count = image->width * image->height * image->base;
+    size_t sample_count = image->width * image->height * image->base * image->base;
     image->samples.resize(sample_count);
 
     size_t pixel_count = image->width * image->height;
@@ -114,6 +119,7 @@ void Pathtracer::construct(const std::string &_filename)
   m_batch.reset(new Batch);
 
   m_scene.reset(new Scene);
+  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_COHERENT, RTC_INTERSECT4);
   
   for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
   {
@@ -169,7 +175,7 @@ void Pathtracer::createThreads()
     local_bin->size = pow(2, m_settings->bin_exponent);
     for(size_t iterator_bin = 0; iterator_bin < 6; ++iterator_bin)
     {
-      local_bin->bin[iterator_bin] = boost::shared_ptr< Ray[] >(new Ray[local_bin->size]);
+      local_bin->bin[iterator_bin] = boost::shared_ptr< RayCompressed[] >(new RayCompressed[local_bin->size]);
       local_bin->index[iterator_bin] = 0;
     }
     
@@ -180,6 +186,7 @@ void Pathtracer::createThreads()
       m_sampler,
       m_image
       )));
+    
     m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
       local_bin,
       m_batch,
@@ -269,9 +276,16 @@ Pathtracer::Pathtracer(const std::string &_filename)
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
   _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
-  construct(_filename);
+  rtcInit(NULL);
 
+  construct(_filename);
   createThreads();
+}
+
+Pathtracer::~Pathtracer()
+{
+  rtcDeleteScene(m_scene->rtc_scene);
+  rtcExit();
 }
 
 void Pathtracer::image(float** _pixels, int* _width, int* _height)
@@ -297,18 +311,69 @@ void Pathtracer::clear()
 
 int Pathtracer::process()
 {
-  size_t pixel_count = m_image->width * m_image->height;
-  for(size_t i = 0; i < pixel_count; ++i)
-  {
-    m_image->pixels[i].r += m_random.getSample();
-    m_image->pixels[i].g += m_random.getSample();
-    m_image->pixels[i].b += m_random.getSample();
-  }
+  // size_t pixel_count = m_image->width * m_image->height;
+  // for(size_t i = 0; i < pixel_count; ++i)
+  // {
+  //   m_image->pixels[i].r += m_random.getSample();
+  //   m_image->pixels[i].g += m_random.getSample();
+  //   m_image->pixels[i].b += m_random.getSample();
+  // }
 
   m_batch->construct(m_settings->batch_exponent);
 
   createCameraTasks();
   runCameraThreads();
+
+  size_t batch_size = pow(2, m_settings->batch_exponent);
+  RayCompressed* batch_current = new RayCompressed[batch_size];
+
+  std::string path;
+  while(m_batch->pop(&path))
+  {
+    std::ifstream infile;
+
+    infile.open(path);
+    infile.read((char *)batch_current, sizeof(RayCompressed) * batch_size);
+    infile.close();
+
+    BoundingBox3f limits;
+    limits.min[0] = batch_current[0].org[0];
+    limits.min[1] = batch_current[1].org[1];
+    limits.min[2] = batch_current[2].org[2];
+    limits.max[0] = batch_current[0].org[0];
+    limits.max[1] = batch_current[1].org[1];
+    limits.max[2] = batch_current[2].org[2];
+
+    for(size_t iterator = 0; iterator < batch_size; ++iterator)
+    {
+      if(batch_current[iterator].org[0] < limits.min[0])
+        limits.min[0] = batch_current[iterator].org[0];
+      if(batch_current[iterator].org[1] < limits.min[1])
+        limits.min[1] = batch_current[iterator].org[1];
+      if(batch_current[iterator].org[2] < limits.min[2])
+        limits.min[2] = batch_current[iterator].org[2];
+
+      if(batch_current[iterator].org[0] > limits.max[0])
+        limits.max[0] = batch_current[iterator].org[0];
+      if(batch_current[iterator].org[1] > limits.max[1])
+        limits.max[1] = batch_current[iterator].org[1];
+      if(batch_current[iterator].org[2] > limits.max[2])
+        limits.max[2] = batch_current[iterator].org[2];
+    }
+
+    RaySort &task = *new(tbb::task::allocate_root()) RaySort(0, batch_size, limits, batch_current);
+    tbb::task::spawn_root_and_wait(task);
+
+    tbb::parallel_for(
+      Range64< size_t >(0, batch_size),
+      RayIntersect(&(*m_scene), batch_current),
+      tbb::simple_partitioner()
+      );
+
+    boost::filesystem::remove(path);
+  }
+
+  delete[] batch_current;
 
   m_batch->clear();
 

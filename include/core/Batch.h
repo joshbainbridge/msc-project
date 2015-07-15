@@ -12,7 +12,7 @@
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
-#include <core/Ray.h>
+#include <core/RayCompressed.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -22,7 +22,8 @@ public:
   ~Batch();
 
   void construct(const int _exponent);
-  void add(const int _size, const int _index, Ray* _data);
+  void add(const int _size, const int _index, RayCompressed* _data);
+  bool pop(std::string* batch);
   void clear();
 
 private:
@@ -30,8 +31,8 @@ private:
 
   std::string m_paths[6];
   boost::iostreams::mapped_file_sink m_outfile[6];
-  Ray* m_pointers[6];
-  Ray* m_ends[6];
+  RayCompressed* m_pointers[6];
+  RayCompressed* m_ends[6];
   boost::mutex m_mutexes[6];
 
   tbb::concurrent_queue< std::string > m_batch_queue;

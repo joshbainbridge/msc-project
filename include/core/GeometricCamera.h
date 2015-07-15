@@ -15,7 +15,7 @@ public:
   inline void aperture(const float _aperture){m_aperture = _aperture;}
   inline void focalDistance(const float _focal_distance){m_focal_distance = _focal_distance;}
 
-  void sample(const int _count, float* _positions, RandomGenerator* _random, Ray* _ouput) const;
+  void sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const;
 
 private:
   float m_aperture;

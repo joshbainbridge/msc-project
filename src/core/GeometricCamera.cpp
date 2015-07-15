@@ -2,7 +2,7 @@
 
 MSC_NAMESPACE_BEGIN
 
-void GeometricCamera::sample(const int _count, float* _positions, RandomGenerator* _random, Ray* _ouput) const
+void GeometricCamera::sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const
 {
   //Construct nodal position
   Vector3f nodal_point = m_origin + (m_dir * m_focal_length);
@@ -25,8 +25,8 @@ void GeometricCamera::sample(const int _count, float* _positions, RandomGenerato
     Vector3f direction = (focal_point - position).normalized();
 
     //Update data
-    std::copy(position.data(), position.data() + 3, _ouput[iterator].position);
-    std::copy(direction.data(), direction.data() + 3, _ouput[iterator].direction);
+    std::copy(position.data(), position.data() + 3, _ouput[iterator].org);
+    std::copy(direction.data(), direction.data() + 3, _ouput[iterator].dir);
   }
 }
 

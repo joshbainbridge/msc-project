@@ -4,7 +4,7 @@ MSC_NAMESPACE_BEGIN
 
 Batch::~Batch()
 {
-  // clear();
+  
 }
 
 void Batch::construct(const int _exponent)
@@ -19,16 +19,16 @@ void Batch::construct(const int _exponent)
 
     boost::iostreams::mapped_file_params params;
     params.path = m_paths[iterator];
-    params.new_file_size = m_size * sizeof(Ray);
+    params.new_file_size = m_size * sizeof(RayCompressed);
     params.mode = std::ios_base::out;
 
     m_outfile[iterator].open(params);
-    m_pointers[iterator] = (Ray*)(m_outfile[iterator].data());
+    m_pointers[iterator] = (RayCompressed*)(m_outfile[iterator].data());
     m_ends[iterator] = m_pointers[iterator] + m_size;
   }
 }
 
-void Batch::add(const int _size, const int _index, Ray* _data)
+void Batch::add(const int _size, const int _index, RayCompressed* _data)
 {
    m_mutexes[_index].lock();
 
@@ -43,17 +43,22 @@ void Batch::add(const int _size, const int _index, Ray* _data)
 
     boost::iostreams::mapped_file_params params;
     params.path = m_paths[_index];
-    params.new_file_size = m_size * sizeof(Ray);
+    params.new_file_size = m_size * sizeof(RayCompressed);
     params.mode = std::ios_base::out;
 
     m_outfile[_index].open(params);
-    m_pointers[_index] = (Ray*)(m_outfile[_index].data());
+    m_pointers[_index] = (RayCompressed*)(m_outfile[_index].data());
     m_ends[_index] = m_pointers[_index] + m_size;
   }
 
   m_pointers[_index] = std::copy(_data, _data + _size, m_pointers[_index]);
   
   m_mutexes[_index].unlock();
+}
+
+bool Batch::pop(std::string* batch)
+{
+  return m_batch_queue.try_pop(*batch);
 }
 
 void Batch::clear()
@@ -67,12 +72,12 @@ void Batch::clear()
     std::cout << "deleted file " << m_paths[iterator] << std::endl;
   }
 
-  std::string path;
-  while(m_batch_queue.try_pop(path))
-  {
-    boost::filesystem::remove(path);
-    std::cout << "deleted file " << path << std::endl;
-  }
+  // std::string path;
+  // while(m_batch_queue.try_pop(path))
+  // {
+  //   boost::filesystem::remove(path);
+  //   std::cout << "deleted file " << path << std::endl;
+  // }
 }
 
 MSC_NAMESPACE_END

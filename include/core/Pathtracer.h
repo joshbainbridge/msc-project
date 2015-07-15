@@ -6,6 +6,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <tbb/concurrent_queue.h>
+#include <tbb/concurrent_vector.h>
 
 #include <core/Common.h>
 #include <core/EmbreeWrapper.h>
@@ -26,6 +27,7 @@ class Pathtracer
 {
 public:
   Pathtracer(const std::string &_filename);
+  ~Pathtracer();
 
   void image(float** _pixels, int* _with, int* _height);
   void clear();
