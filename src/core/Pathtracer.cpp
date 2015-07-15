@@ -1,5 +1,7 @@
 #include <fstream>
 
+#include <tbb/tbb.h>
+
 #include <boost/thread.hpp>
 
 #include <core/Pathtracer.h>
@@ -7,10 +9,10 @@
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
-#include <core/RayCompressed.h>
-#include <core/RayUncompressed.h>
 #include <core/RaySort.h>
 #include <core/RayIntersect.h>
+#include <core/RayDecompress.h>
+#include <core/RayBoundingbox.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -119,7 +121,7 @@ void Pathtracer::construct(const std::string &_filename)
   m_batch.reset(new Batch);
 
   m_scene.reset(new Scene);
-  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_COHERENT, RTC_INTERSECT4);
+  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_COHERENT, RTC_INTERSECT1);
   
   for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
   {
@@ -158,7 +160,7 @@ void Pathtracer::construct(const std::string &_filename)
   }
 }
 
-void Pathtracer::createThreads()
+void Pathtracer::create_threads()
 {
   m_nthreads = boost::thread::hardware_concurrency();
 //  m_nthreads = 1;
@@ -196,7 +198,7 @@ void Pathtracer::createThreads()
   }
 }
 
-void Pathtracer::createCameraTasks()
+void Pathtracer::camera_threads()
 {
   size_t bucket_size = m_settings->bucket_size;
   size_t task_count_x = ceil(m_image->width / static_cast<float>(bucket_size));
@@ -227,48 +229,54 @@ void Pathtracer::createCameraTasks()
   }
 
   // std::cout << task_count_x * task_count_y << " render tasks created" << std::endl;
+
+  for(int iterator = 0; iterator < m_nthreads; ++iterator)
+    m_camera_threads[iterator]->start(&m_camera_queue);
+
+  for(int iterator = 0; iterator < m_nthreads; ++iterator)
+    m_camera_threads[iterator]->join();
 }
 
-void Pathtracer::createSurfaceTasks()
+void Pathtracer::surface_threads(size_t _size, RayUncompressed* _batch)
 {
-  // size_t m_begin = 0;
-  // size_t m_end = 2048;
-  // while(m_array[m_begin] != m_array[m_end - 1])
-  // {
-  //   size_t s = m_begin;
-  //   for(size_t i = m_begin; i < (m_end - 1); ++i)
-  //   {
-  //     if(m_array[i] != m_array[i + 1])
-  //     {
-  //       s = i + 1;
-  //       break;
-  //     }
-  //   }
+  int current_id = _batch[0].geomID;
+  size_t current_index = 0;
+  for(size_t iterator = 0; iterator < _size; ++iterator)
+  {
+    if(current_id != _batch[iterator].geomID)
+    {
+      SurfaceTask task;
+      task.begin = current_index;
+      task.end = iterator;
 
-  //   m_surface_queue.push(task);
-  // }
-  // else if((m_end - m_begin) > 4096)
-  // {
-  //   size_t s = (m_end - m_begin) / 2;
+      m_surface_queue.push(task);
 
-  //   NewTask &lrange = *new( tbb::task::allocate_child() ) NewTask(m_begin, s, m_array);
-  //   NewTask &rrange = *new( tbb::task::allocate_child() ) NewTask(s, m_end, m_array);
+      current_id = _batch[iterator].geomID;
+      current_index = iterator;
+    }
+    else if((iterator - current_index) > 4096)
+    {
+      SurfaceTask task;
+      task.begin = current_index;
+      task.end = iterator;
 
-  //   tbb::task::set_ref_count(3);
-    
-  //   tbb::task::spawn(lrange);
-  //   tbb::task::spawn(rrange);
-  //   tbb::task::wait_for_all();
-  // }
-}
+      m_surface_queue.push(task);
 
-void Pathtracer::runCameraThreads()
-{
-  for(int i = 0; i < m_nthreads; ++i)
-    m_camera_threads[i]->start(&m_camera_queue);
+      current_index = iterator;
+    }
+  }
 
-  for(int i = 0; i < m_nthreads; ++i)
-    m_camera_threads[i]->join();
+  SurfaceTask task;
+  task.begin = current_index;
+  task.end = _size;
+
+  m_surface_queue.push(task);
+
+  for(int iterator = 0; iterator < m_nthreads; ++iterator)
+    m_surface_threads[iterator]->start(&m_surface_queue);
+
+  for(int iterator = 0; iterator < m_nthreads; ++iterator)
+    m_surface_threads[iterator]->join();
 }
 
 Pathtracer::Pathtracer(const std::string &_filename)
@@ -279,7 +287,7 @@ Pathtracer::Pathtracer(const std::string &_filename)
   rtcInit(NULL);
 
   construct(_filename);
-  createThreads();
+  create_threads();
 }
 
 Pathtracer::~Pathtracer()
@@ -309,23 +317,20 @@ void Pathtracer::clear()
   m_image->iteration = 0;
 }
 
+static inline bool operator<(const RayUncompressed &lhs, const RayUncompressed &rhs)
+{
+  return (lhs.geomID < rhs.geomID) || (lhs.geomID == rhs.geomID && lhs.primID < rhs.primID);
+}
+
 int Pathtracer::process()
 {
-  // size_t pixel_count = m_image->width * m_image->height;
-  // for(size_t i = 0; i < pixel_count; ++i)
-  // {
-  //   m_image->pixels[i].r += m_random.getSample();
-  //   m_image->pixels[i].g += m_random.getSample();
-  //   m_image->pixels[i].b += m_random.getSample();
-  // }
-
   m_batch->construct(m_settings->batch_exponent);
 
-  createCameraTasks();
-  runCameraThreads();
-
   size_t batch_size = pow(2, m_settings->batch_exponent);
-  RayCompressed* batch_current = new RayCompressed[batch_size];
+  RayCompressed* batch_compressed = new RayCompressed[batch_size];
+  RayUncompressed* batch_uncompressed = new RayUncompressed[batch_size];
+
+  camera_threads();
 
   std::string path;
   while(m_batch->pop(&path))
@@ -333,47 +338,28 @@ int Pathtracer::process()
     std::ifstream infile;
 
     infile.open(path);
-    infile.read((char *)batch_current, sizeof(RayCompressed) * batch_size);
+    infile.read((char *)batch_compressed, sizeof(RayCompressed) * batch_size);
     infile.close();
 
-    BoundingBox3f limits;
-    limits.min[0] = batch_current[0].org[0];
-    limits.min[1] = batch_current[1].org[1];
-    limits.min[2] = batch_current[2].org[2];
-    limits.max[0] = batch_current[0].org[0];
-    limits.max[1] = batch_current[1].org[1];
-    limits.max[2] = batch_current[2].org[2];
+    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_size, 1024), RayDecompress(batch_compressed, batch_uncompressed));
 
-    for(size_t iterator = 0; iterator < batch_size; ++iterator)
-    {
-      if(batch_current[iterator].org[0] < limits.min[0])
-        limits.min[0] = batch_current[iterator].org[0];
-      if(batch_current[iterator].org[1] < limits.min[1])
-        limits.min[1] = batch_current[iterator].org[1];
-      if(batch_current[iterator].org[2] < limits.min[2])
-        limits.min[2] = batch_current[iterator].org[2];
+    RayBoundingbox limits(batch_uncompressed);
+    tbb::parallel_reduce(tbb::blocked_range< size_t >(0, batch_size, 1024), limits);
 
-      if(batch_current[iterator].org[0] > limits.max[0])
-        limits.max[0] = batch_current[iterator].org[0];
-      if(batch_current[iterator].org[1] > limits.max[1])
-        limits.max[1] = batch_current[iterator].org[1];
-      if(batch_current[iterator].org[2] > limits.max[2])
-        limits.max[2] = batch_current[iterator].org[2];
-    }
-
-    RaySort &task = *new(tbb::task::allocate_root()) RaySort(0, batch_size, limits, batch_current);
+    RaySort &task = *new(tbb::task::allocate_root()) RaySort(0, batch_size, limits.value(), batch_uncompressed);
     tbb::task::spawn_root_and_wait(task);
 
-    tbb::parallel_for(
-      Range64< size_t >(0, batch_size),
-      RayIntersect(&(*m_scene), batch_current),
-      tbb::simple_partitioner()
-      );
+    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_size, 128), RayIntersect(&(*m_scene), batch_uncompressed));
+
+    tbb::parallel_sort(&batch_uncompressed[0], &batch_uncompressed[batch_size]);
+
+    surface_threads(batch_size, batch_uncompressed);
 
     boost::filesystem::remove(path);
   }
 
-  delete[] batch_current;
+  delete[] batch_uncompressed;
+  delete[] batch_compressed;
 
   m_batch->clear();
 

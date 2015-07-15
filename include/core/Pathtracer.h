@@ -19,6 +19,8 @@
 #include <core/CameraInterface.h>
 #include <core/FilterInterface.h>
 #include <core/SamplerInterface.h>
+#include <core/RayUncompressed.h>
+#include <core/RayCompressed.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
@@ -53,10 +55,9 @@ private:
   RandomGenerator m_random;
 
   void construct(const std::string &_filename);
-  void createThreads();
-  void createCameraTasks();
-  void createSurfaceTasks();
-  void runCameraThreads();
+  void create_threads();
+  void camera_threads();
+  void surface_threads(size_t _size, RayUncompressed* _batch);
 };
 
 MSC_NAMESPACE_END

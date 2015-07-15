@@ -10,41 +10,37 @@ struct RayUncompressed
 {
   union
   {
-    RTCRay4 rtc_ray;
+    RTCRay rtc_ray;
     struct RTCORE_ALIGN(16)
     {
-      // Ray data
-      float orgx[4];
-      float orgy[4];
-      float orgz[4];
+      //Ray data
+      float org[3];
+      float align0;
       
-      float dirx[4];
-      float diry[4];
-      float dirz[4];
+      float dir[3];
+      float align1;
       
-      float tnear[4];
-      float tfar[4];
+      float tnear;
+      float tfar;
 
-      float time[4];
-      int mask[4];
+      float time;
+      int mask;
+      
+      // Hit data
+      float Ng[3];
+      float align2;
+      
+      float u;
+      float v;
 
-      //Hit data
-      float Ngx[4];
-      float Ngy[4];
-      float Ngz[4];
-
-      float u[4];
-      float v[4];
-
-      int geomID[4];
-      int primID[4];
-      int instID[4];
+      int geomID;
+      int primID;
+      int instID;
     };
   };
 
   //Added data
-  int sampleID[4];
-  int32_t valid[4];
+  int sampleID;
 };
 
 MSC_NAMESPACE_END

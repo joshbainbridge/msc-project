@@ -69,7 +69,7 @@ void Batch::clear()
   {
     m_outfile[iterator].close();
     boost::filesystem::remove(m_paths[iterator]);
-    std::cout << "deleted file " << m_paths[iterator] << std::endl;
+    // std::cout << "deleted file " << m_paths[iterator] << std::endl;
   }
 
   // std::string path;

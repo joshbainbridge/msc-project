@@ -25,6 +25,8 @@ SET( CORE_SOURCES
   ${SRC}/core/SurfaceThread.cpp
   ${SRC}/core/RaySort.cpp
   ${SRC}/core/RayIntersect.cpp
+  ${SRC}/core/RayDecompress.cpp
+  ${SRC}/core/RayBoundingbox.cpp
   )
 
 SET( CORE_HEADERS
@@ -52,6 +54,8 @@ SET( CORE_HEADERS
   ${INC}/core/RayUncompressed.h
   ${INC}/core/RaySort.h
   ${INC}/core/RayIntersect.h
+  ${INC}/core/RayDecompress.h
+  ${INC}/core/RayBoundingbox.h
   )
 
 SET( FRM_SOURCES
