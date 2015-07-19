@@ -1,7 +1,6 @@
 #include <fstream>
 
 #include <tbb/tbb.h>
-
 #include <boost/thread.hpp>
 
 #include <core/Pathtracer.h>
@@ -9,6 +8,7 @@
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
+#include <core/PolygonObject.h>
 #include <core/RaySort.h>
 #include <core/RayIntersect.h>
 #include <core/RayDecompress.h>
@@ -121,7 +121,7 @@ void Pathtracer::construct(const std::string &_filename)
   m_batch.reset(new Batch);
 
   m_scene.reset(new Scene);
-  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_COHERENT, RTC_INTERSECT1);
+  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_STATIC, RTC_INTERSECT1);
   
   for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
   {
@@ -132,9 +132,34 @@ void Pathtracer::construct(const std::string &_filename)
     {
       if(second["type"].as< std::string >() == "Polygon")
       {
-        // PolygonObject* polygon_object = new PolygonObject();
-        // *polygon_object = second.as<PolygonObject>();
-        // m_scene.add(polygon_object);
+        PolygonObject polygon_object = second.as<PolygonObject>();
+
+        size_t geom_id = rtcNewTriangleMesh(
+          m_scene->rtc_scene,
+          RTC_GEOMETRY_STATIC,
+          polygon_object.indices.size() / 3,
+          polygon_object.positions.size()
+          );
+
+        rtcSetBuffer(
+          m_scene->rtc_scene,
+          geom_id,
+          RTC_VERTEX_BUFFER,
+          polygon_object.positions.data(),
+          0,
+          sizeof(Vertex)
+          );
+
+        rtcSetBuffer(
+          m_scene->rtc_scene,
+          geom_id,
+          RTC_INDEX_BUFFER,
+          polygon_object.indices.data(),
+          0,
+          3 * sizeof(unsigned int)
+          );
+
+        m_scene->objects[geom_id] = polygon_object;
       }
     }
 
@@ -158,6 +183,8 @@ void Pathtracer::construct(const std::string &_filename)
       }
     }
   }
+
+  rtcCommit(m_scene->rtc_scene);
 }
 
 void Pathtracer::create_threads()
@@ -273,7 +300,7 @@ void Pathtracer::surface_threads(size_t _size, RayUncompressed* _batch)
   m_surface_queue.push(task);
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
-    m_surface_threads[iterator]->start(&m_surface_queue);
+    m_surface_threads[iterator]->start(&m_surface_queue, _batch);
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
     m_surface_threads[iterator]->join();
@@ -362,6 +389,30 @@ int Pathtracer::process()
   delete[] batch_compressed;
 
   m_batch->clear();
+
+  size_t sample_count = m_image->base * m_image->base;
+  for(size_t iterator_x = 0; iterator_x < m_image->width; ++iterator_x)
+  {
+    for(size_t iterator_y = 0; iterator_y < m_image->height; ++iterator_y)
+    {
+      float total_r = 0.f;
+      float total_g = 0.f;
+      float total_b = 0.f;
+
+      for(size_t iterator = 0; iterator < sample_count; ++iterator)
+      {
+        size_t sample_index = (iterator_x * m_image->height * sample_count) + (iterator_y * sample_count) + (iterator);
+        total_r += m_image->samples[sample_index].r;
+        total_g += m_image->samples[sample_index].g;
+        total_b += m_image->samples[sample_index].b;
+      }
+
+      size_t pixel_index = iterator_y * m_image->width + iterator_x;
+      m_image->pixels[pixel_index].r += (total_r / sample_count);
+      m_image->pixels[pixel_index].g += (total_g / sample_count);
+      m_image->pixels[pixel_index].b += (total_b / sample_count);
+    }
+  }
 
   m_image->iteration += 1;
   return m_image->iteration;

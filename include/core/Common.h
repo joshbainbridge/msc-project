@@ -47,13 +47,19 @@ typedef BoundingBox< float, 3 > BoundingBox3f;
 // };
 
 typedef Eigen::Matrix< float, 2, 1 > Vector2f;
+typedef Eigen::Map< msc::Vector2f > Vector2fMap;
 typedef Eigen::Matrix< float, 3, 1 > Vector3f;
+typedef Eigen::Map< msc::Vector3f > Vector3fMap;
 typedef Eigen::Matrix< float, 4, 1 > Vector4f;
-typedef Eigen::Matrix< float, 4, 4 > TransMatrix;
+typedef Eigen::Map< msc::Vector4f > Vector4fMap;
+typedef Eigen::Array< float, 3, 1 > Colour3f;
+typedef Eigen::Map< msc::Colour3f > Colour3fMap;
+
+typedef Eigen::Transform< float, 3, Eigen::Affine > Affine3f;
+
 // typedef Ray< Vector2f, Vector2f > Ray2f;
 // typedef Ray< Vector3f, Vector3f > Ray3f;
 // typedef Ray< Vector4f, Vector4f > Ray4f;
-typedef Eigen::Array< float, 3, 1 > Colour3f;
 
 MSC_NAMESPACE_END
 

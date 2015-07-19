@@ -56,6 +56,7 @@ SET( CORE_HEADERS
   ${INC}/core/RayIntersect.h
   ${INC}/core/RayDecompress.h
   ${INC}/core/RayBoundingbox.h
+  ${INC}/core/PolygonObject.h
   )
 
 SET( FRM_SOURCES
@@ -68,8 +69,8 @@ SET( FRM_HEADERS
   )
 
 SET( THIRD_PARTY
-  # ${THR}/tinyobjloader/tiny_obj_loader.cpp
-  # ${THR}/tinyobjloader/tiny_obj_loader.h
+  ${THR}/tinyobjloader/tiny_obj_loader.cpp
+  ${THR}/tinyobjloader/tiny_obj_loader.h
   )
 
 ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME}
@@ -87,7 +88,8 @@ ADD_LIBRARY( framebuffer
   ${FRM_HEADERS}
   )
 
-FIND_PACKAGE( Boost COMPONENTS system filesystem program_options iostreams thread chrono python REQUIRED )
+FIND_PACKAGE( Boost COMPONENTS
+  system filesystem program_options unit_test_framework iostreams thread chrono python REQUIRED )
 FIND_PACKAGE( TBB REQUIRED )
 FIND_PACKAGE( Embree REQUIRED )
 FIND_PACKAGE( Eigen3 REQUIRED )
@@ -112,7 +114,8 @@ SET(CMAKE_CXX_COMPILER ${CXX})
 SET(CMAKE_CXX_FLAGS ${FLAGS})
 
 INCLUDE_DIRECTORIES(
-  include
+  ${INC}
+  ${THR}
   ${Boost_INCLUDE_DIRS}
   ${TBB_INCLUDE_DIRS}
   ${EMBREE_INCLUDE_DIRS}
@@ -157,5 +160,7 @@ INSTALL(
   FILES ${CORE_HEADERS}
   PUBLIC_HEADER DESTINATION include/pathtracer
   )
+
+ENABLE_TESTING()
 
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/scenes DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

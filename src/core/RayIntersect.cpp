@@ -1,5 +1,7 @@
 #include <core/RayIntersect.h>
 
+#include <iostream>
+
 MSC_NAMESPACE_BEGIN
 
 void RayIntersect::operator()(const tbb::blocked_range< size_t >& r) const

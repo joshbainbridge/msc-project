@@ -10,6 +10,7 @@
 #include <core/Batch.h>
 #include <core/Scene.h>
 #include <core/Image.h>
+#include <core/RayUncompressed.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
@@ -35,9 +36,9 @@ public:
     , m_image(_image)
   {;}
 
-  void start(tbb::concurrent_queue< SurfaceTask >* _queue);
+  void start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch);
   void join();
-  void process(tbb::concurrent_queue< SurfaceTask >* _queue);
+  void process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch);
 
 private:
   boost::thread m_thread;

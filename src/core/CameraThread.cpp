@@ -32,8 +32,8 @@ void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
 
         for(size_t iterator = 0; iterator < count; ++iterator)
         {
-          samples[2 * iterator + 0] = ((iterator_x + samples[2 * iterator + 0]) * 2.f - m_image->width) / m_image->width;
-          samples[2 * iterator + 1] = ((iterator_y + samples[2 * iterator + 1]) * 2.f - m_image->height) / m_image->width;
+          samples[2 * iterator + 0] = (((iterator_x + samples[2 * iterator + 0]) * 2.f - m_image->width) / m_image->width) * 36.f;
+          samples[2 * iterator + 1] = (((iterator_y + samples[2 * iterator + 1]) * 2.f - m_image->height) / m_image->width) * 36.f;
           rays[iterator].sampleID = (iterator_x * m_image->height * count) + (iterator_y * count) + iterator;
           m_image->samples[rays[iterator].sampleID].x = samples[2 * iterator + 0];
           m_image->samples[rays[iterator].sampleID].y = samples[2 * iterator + 1];

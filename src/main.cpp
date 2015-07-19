@@ -108,9 +108,9 @@ int main(int argc, const char *argv[])
 
     for(size_t i = 0; i < pixel_count; ++i)
     {
-      image[3 * i + 0] = static_cast<unsigned char>(image_pointer[3 * i + 0] * 255 / iteration);
-      image[3 * i + 1] = static_cast<unsigned char>(image_pointer[3 * i + 1] * 255 / iteration);
-      image[3 * i + 2] = static_cast<unsigned char>(image_pointer[3 * i + 2] * 255 / iteration);
+      image[3 * i + 0] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 0] / iteration) * 255.f);
+      image[3 * i + 1] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 1] / iteration) * 255.f);
+      image[3 * i + 2] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 2] / iteration) * 255.f);
     }
 
     framebuffer->image(image, width, height);
@@ -124,7 +124,7 @@ int main(int argc, const char *argv[])
       
       framebuffer->draw();
 
-      std::string title = "Pathtracer Iteration: " + std::to_string(iteration);
+      std::string title = "Pathtracer Iteration: " + std::to_string(iteration + 1);
       framebuffer->title(title);
 
       // pathtracer iterate process here...
@@ -132,9 +132,9 @@ int main(int argc, const char *argv[])
 
       for(size_t i = 0; i < pixel_count; ++i)
       {
-        image[3 * i + 0] = static_cast<unsigned char>(image_pointer[3 * i + 0] * 255 / iteration);
-        image[3 * i + 1] = static_cast<unsigned char>(image_pointer[3 * i + 1] * 255 / iteration);
-        image[3 * i + 2] = static_cast<unsigned char>(image_pointer[3 * i + 2] * 255 / iteration);
+        image[3 * i + 0] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 0] / iteration) * 255.f);
+        image[3 * i + 1] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 1] / iteration) * 255.f);
+        image[3 * i + 2] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 2] / iteration) * 255.f);
       }
 
       framebuffer->image(image, width, height);

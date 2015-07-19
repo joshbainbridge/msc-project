@@ -94,13 +94,13 @@ void Framebuffer::createSurface()
   glBindVertexArray(m_vao);
 
   float vertices[] = {
-    -1.f,  1.f, 0.f, 1.f,
-     1.f,  1.f, 1.f, 1.f,
-     1.f, -1.f, 1.f, 0.f,
+    -1.f,  1.f, 0.f, 0.f,
+     1.f,  1.f, 1.f, 0.f,
+     1.f, -1.f, 1.f, 1.f,
 
-     1.f, -1.f, 1.f, 0.f,
-    -1.f, -1.f, 0.f, 0.f,
-    -1.f,  1.f, 0.f, 1.f
+     1.f, -1.f, 1.f, 1.f,
+    -1.f, -1.f, 0.f, 1.f,
+    -1.f,  1.f, 0.f, 0.f
   };
 
   glGenBuffers(1, &m_vbo);
@@ -185,7 +185,7 @@ void Framebuffer::createContext()
   glfwWindowHint(GLFW_SAMPLES, 2);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   
-  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Pathtracer Iteration: 0", NULL, NULL);
+  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Pathtracer Iteration: 1", NULL, NULL);
 
   glfwMakeContextCurrent(m_window);
   glfwSwapInterval(true);

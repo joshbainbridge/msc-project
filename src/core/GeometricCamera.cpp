@@ -17,7 +17,7 @@ void GeometricCamera::sample(const int _count, float* _positions, RandomGenerato
     Vector3f focal_point = film_position + (nodal_point - film_position) * nodal_focal_ratio;
 
     //Get sample position on lens
-    Vector2f aperture_sample = rejectionSampling(_random) * m_aperture;
+    Vector2f aperture_sample = rejectionSampling(_random) * (m_focal_length / m_aperture);
     Vector3f aperture_position = (m_right * aperture_sample.x()) + (m_up * aperture_sample.y());
 
     //Given x and y position between -1 and 1 generate ray postioned on camera plane and calculate direction

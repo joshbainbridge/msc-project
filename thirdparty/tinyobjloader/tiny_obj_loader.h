@@ -74,15 +74,15 @@ private:
 /// The function returns error string.
 /// Returns empty string when loading .obj success.
 /// 'mtl_basepath' is optional, and used for base path for .mtl file.
-std::string LoadObj(std::vector<shape_t> &shapes,       // [output]
-                    std::vector<material_t> &materials, // [output]
+std::string LoadObj(shape_t &output,       // [output]
+                    // std::vector<material_t> &materials, // [output]
                     const char *filename, const char *mtl_basepath = NULL);
 
 /// Loads object from a std::istream, uses GetMtlIStreamFn to retrieve
 /// std::istream for materials.
 /// Returns empty string when loading .obj success.
-std::string LoadObj(std::vector<shape_t> &shapes,       // [output]
-                    std::vector<material_t> &materials, // [output]
+std::string LoadObj(shape_t &output,       // [output]
+                    // std::vector<material_t> &materials, // [output]
                     std::istream &inStream, MaterialReader &readMatFn);
 
 /// Loads materials into std::map

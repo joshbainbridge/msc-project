@@ -635,11 +635,11 @@ std::string MaterialFileReader::operator()(const std::string &matId,
   return err;
 }
 
-std::string LoadObj(std::vector<shape_t> &shapes,
-                    std::vector<material_t> &materials, // [output]
+std::string LoadObj(shape_t &output,
+                    // std::vector<material_t> &materials, // [output]
                     const char *filename, const char *mtl_basepath) {
 
-  shapes.clear();
+  // shapes.clear();
 
   std::stringstream err;
 
@@ -655,11 +655,11 @@ std::string LoadObj(std::vector<shape_t> &shapes,
   }
   MaterialFileReader matFileReader(basePath);
 
-  return LoadObj(shapes, materials, ifs, matFileReader);
+  return LoadObj(output, ifs, matFileReader);
 }
 
-std::string LoadObj(std::vector<shape_t> &shapes,
-                    std::vector<material_t> &materials, // [output]
+std::string LoadObj(shape_t &output,
+                    // std::vector<material_t> &materials, // [output]
                     std::istream &inStream, MaterialReader &readMatFn) {
   std::stringstream err;
 
@@ -760,115 +760,115 @@ std::string LoadObj(std::vector<shape_t> &shapes,
       continue;
     }
 
-    // use mtl
-    if ((0 == strncmp(token, "usemtl", 6)) && isSpace((token[6]))) {
+//     // use mtl
+//     if ((0 == strncmp(token, "usemtl", 6)) && isSpace((token[6]))) {
 
-      char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
-      token += 7;
-#ifdef _MSC_VER
-      sscanf_s(token, "%s", namebuf, _countof(namebuf));
-#else
-      sscanf(token, "%s", namebuf);
-#endif
+//       char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
+//       token += 7;
+// #ifdef _MSC_VER
+//       sscanf_s(token, "%s", namebuf, _countof(namebuf));
+// #else
+//       sscanf(token, "%s", namebuf);
+// #endif
 
-      // Create face group per material.
-      bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
-                                        faceGroup, material, name, true);
-      if (ret) {
-          shapes.push_back(shape);
-      }
-      shape = shape_t();
-      faceGroup.clear();
+//       // Create face group per material.
+//       bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
+//                                         faceGroup, material, name, true);
+//       if (ret) {
+//           shapes.push_back(shape);
+//       }
+//       shape = shape_t();
+//       faceGroup.clear();
 
-      if (material_map.find(namebuf) != material_map.end()) {
-        material = material_map[namebuf];
-      } else {
-        // { error!! material not found }
-        material = -1;
-      }
+//       if (material_map.find(namebuf) != material_map.end()) {
+//         material = material_map[namebuf];
+//       } else {
+//         // { error!! material not found }
+//         material = -1;
+//       }
 
-      continue;
-    }
+//       continue;
+//     }
 
-    // load mtl
-    if ((0 == strncmp(token, "mtllib", 6)) && isSpace((token[6]))) {
-      char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
-      token += 7;
-#ifdef _MSC_VER
-      sscanf_s(token, "%s", namebuf, _countof(namebuf));
-#else
-      sscanf(token, "%s", namebuf);
-#endif
+//     // load mtl
+//     if ((0 == strncmp(token, "mtllib", 6)) && isSpace((token[6]))) {
+//       char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
+//       token += 7;
+// #ifdef _MSC_VER
+//       sscanf_s(token, "%s", namebuf, _countof(namebuf));
+// #else
+//       sscanf(token, "%s", namebuf);
+// #endif
 
-      std::string err_mtl = readMatFn(namebuf, materials, material_map);
-      if (!err_mtl.empty()) {
-        faceGroup.clear(); // for safety
-        return err_mtl;
-      }
+//       std::string err_mtl = readMatFn(namebuf, materials, material_map);
+//       if (!err_mtl.empty()) {
+//         faceGroup.clear(); // for safety
+//         return err_mtl;
+//       }
 
-      continue;
-    }
+//       continue;
+//     }
 
-    // group name
-    if (token[0] == 'g' && isSpace((token[1]))) {
+//     // group name
+//     if (token[0] == 'g' && isSpace((token[1]))) {
 
-      // flush previous face group.
-      bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
-                                        faceGroup, material, name, true);
-      if (ret) {
-        shapes.push_back(shape);
-      }
+//       // flush previous face group.
+//       bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
+//                                         faceGroup, material, name, true);
+//       if (ret) {
+//         shapes.push_back(shape);
+//       }
 
-      shape = shape_t();
+//       shape = shape_t();
 
-      // material = -1;
-      faceGroup.clear();
+//       // material = -1;
+//       faceGroup.clear();
 
-      std::vector<std::string> names;
-      while (!isNewLine(token[0])) {
-        std::string str = parseString(token);
-        names.push_back(str);
-        token += strspn(token, " \t\r"); // skip tag
-      }
+//       std::vector<std::string> names;
+//       while (!isNewLine(token[0])) {
+//         std::string str = parseString(token);
+//         names.push_back(str);
+//         token += strspn(token, " \t\r"); // skip tag
+//       }
 
-      assert(names.size() > 0);
+//       assert(names.size() > 0);
 
-      // names[0] must be 'g', so skip the 0th element.
-      if (names.size() > 1) {
-        name = names[1];
-      } else {
-        name = "";
-      }
+//       // names[0] must be 'g', so skip the 0th element.
+//       if (names.size() > 1) {
+//         name = names[1];
+//       } else {
+//         name = "";
+//       }
 
-      continue;
-    }
+//       continue;
+//     }
 
-    // object name
-    if (token[0] == 'o' && isSpace((token[1]))) {
+//     // object name
+//     if (token[0] == 'o' && isSpace((token[1]))) {
 
-      // flush previous face group.
-      bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
-                                        faceGroup, material, name, true);
-      if (ret) {
-        shapes.push_back(shape);
-      }
+//       // flush previous face group.
+//       bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt,
+//                                         faceGroup, material, name, true);
+//       if (ret) {
+//         shapes.push_back(shape);
+//       }
 
-      // material = -1;
-      faceGroup.clear();
-      shape = shape_t();
+//       // material = -1;
+//       faceGroup.clear();
+//       shape = shape_t();
 
-      // @todo { multiple object name? }
-      char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
-      token += 2;
-#ifdef _MSC_VER
-      sscanf_s(token, "%s", namebuf, _countof(namebuf));
-#else
-      sscanf(token, "%s", namebuf);
-#endif
-      name = std::string(namebuf);
+//       // @todo { multiple object name? }
+//       char namebuf[TINYOBJ_SSCANF_BUFFER_SIZE];
+//       token += 2;
+// #ifdef _MSC_VER
+//       sscanf_s(token, "%s", namebuf, _countof(namebuf));
+// #else
+//       sscanf(token, "%s", namebuf);
+// #endif
+//       name = std::string(namebuf);
 
-      continue;
-    }
+//       continue;
+//     }
 
     // Ignore unknown command.
   }
@@ -876,7 +876,8 @@ std::string LoadObj(std::vector<shape_t> &shapes,
   bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt, faceGroup,
                                     material, name, true);
   if (ret) {
-    shapes.push_back(shape);
+    // shapes.push_back(shape);
+    output = shape;
   }
   faceGroup.clear(); // for safety
 

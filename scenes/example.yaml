@@ -3,7 +3,7 @@
 image:
   width: 700
   height: 500
-  sample base: 2
+  sample base: 1
 
 settings:
   ray depth: 3
@@ -14,11 +14,11 @@ settings:
 
 camera:
   type: Geometric
-  origin: [ 0, 0, 1250 ]
-  direction: [ 0, 0, -1 ]
-  focal length: 3.7320508075
-  focal distance: 1100
-  aperture: 3
+  origin: [ 0, 150, 1000 ]
+  direction: [ 0, -0.05, -1 ]
+  focal length: 180
+  focal distance: 1000
+  aperture: 5.6
 
 filter:
   type: Tent
@@ -30,26 +30,18 @@ sampler:
 
 object:
   type: Polygon
-  filename: objects/dragon.obj
-  position: [ 50.2, 10, 0 ]
-  rotation: [ 0, 90, 0 ]
-  scale: [ 1, 1, 1 ]
+  filename: scenes/objects/dragon.obj
+  translation: [ 0, 0, 0 ]
+  rotation: [ 0, 0, 0 ]
+  scale: [ 10, 10, 10 ]
   material: 1
 
 object:
   type: Polygon
-  filename: objects/dragon.obj
-  position: [ -50.2, 10, 0 ]
-  rotation: [ 0, 90, 0 ]
-  scale: [ 1, 1, 1 ]
-  material: 1
-
-object:
-  type: Polygon
-  filename: objects/dragon.obj
-  position: [ 0.2, 10, 0 ]
-  rotation: [ 0, 90, 0 ]
-  scale: [ 1, 1, 1 ]
+  filename: scenes/objects/backdrop_data.obj
+  translation: [ 0, 0, 0 ]
+  rotation: [ 0, 0, 0 ]
+  scale: [ 10, 10, 10 ]
   material: 1
 
 material:
