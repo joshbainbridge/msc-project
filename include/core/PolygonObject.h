@@ -11,13 +11,6 @@
 
 MSC_NAMESPACE_BEGIN
 
-// Required so that data is aligned to 16 bytes
-struct Vertex
-{
-  float x, y, z;
-  float align;
-};
-
 struct PolygonObject
 {
   std::string filename;
@@ -25,7 +18,7 @@ struct PolygonObject
   Vector3f rotation;
   Vector3f scale;
 
-  std::vector< Vertex > positions;
+  std::vector< float > positions;
   std::vector< float > normals;
   std::vector< float > texcoords;
   std::vector< unsigned int > indices;
@@ -67,19 +60,10 @@ template<> struct convert<msc::PolygonObject>
     if(!err.empty())
       std::cout << err << std::endl;
 
-    size_t position_count = shape.mesh.positions.size() / 3;
-    rhs.positions.resize(position_count);
-    for(size_t i = 0; i < position_count; ++i)
-    {
-      rhs.positions[i].x = shape.mesh.positions[3 * i + 0];
-      rhs.positions[i].y = shape.mesh.positions[3 * i + 1];
-      rhs.positions[i].z = shape.mesh.positions[3 * i + 2];
-    }
+    rhs.positions.swap(shape.mesh.positions);
     rhs.normals.swap(shape.mesh.normals);
     rhs.texcoords.swap(shape.mesh.texcoords);
     rhs.indices.swap(shape.mesh.indices);
-
-    std::cout << shape.mesh.positions.size() << ", " << rhs.normals.size() << ", " << rhs.texcoords.size() << ", " << rhs.indices.size() << std::endl;
 
     msc::Affine3f transform(msc::Affine3f::Identity());
     transform *= Eigen::Translation3f(rhs.translation);
@@ -89,9 +73,9 @@ template<> struct convert<msc::PolygonObject>
     transform *= Eigen::AlignedScaling3f(rhs.scale);
 
     msc::Vector3fMap mapped_data(NULL);
-    for(size_t i = 0; i < position_count; ++i)
+    for(size_t i = 0; i < rhs.positions.size() / 3; ++i)
     {
-      new (&mapped_data) msc::Vector3fMap((float*) &(rhs.positions[i]));
+      new (&mapped_data) msc::Vector3fMap((float*) &(rhs.positions[3 * i]));
       mapped_data = transform * mapped_data;
     }
 

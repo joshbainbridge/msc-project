@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <tbb/concurrent_queue.h>
 #include <tbb/concurrent_vector.h>
+#include <OpenImageIO/texture.h>
 
 #include <core/Common.h>
 #include <core/EmbreeWrapper.h>
@@ -51,13 +52,15 @@ private:
 
   tbb::concurrent_queue< CameraTask > m_camera_queue;
   tbb::concurrent_queue< SurfaceTask > m_surface_queue;
+
+  OpenImageIO::TextureSystem* m_texture_system;
   
   RandomGenerator m_random;
 
   void construct(const std::string &_filename);
-  void create_threads();
-  void camera_threads();
-  void surface_threads(size_t _size, RayUncompressed* _batch);
+  void createThreads();
+  void cameraBegin();
+  void surfaceBegin(size_t _size, RayUncompressed* _batch);
 };
 
 MSC_NAMESPACE_END

@@ -67,12 +67,6 @@ void Pathtracer::construct(const std::string &_filename)
   {
     GeometricCamera* camera = new GeometricCamera();
 
-    camera->origin(Vector3f(0.f, 0.f, 0.f));
-    camera->direction(Vector3f(0.f, 0.f, 1.f));
-    camera->focalLength(5.f);
-    camera->focalDistance(100.f);
-    camera->aperture(10.f);
-
     m_camera.reset(camera);
 
     if(node_setup["camera"])
@@ -141,25 +135,25 @@ void Pathtracer::construct(const std::string &_filename)
           polygon_object.positions.size()
           );
 
+        m_scene->objects[geom_id] = polygon_object;
+
         rtcSetBuffer(
           m_scene->rtc_scene,
           geom_id,
           RTC_VERTEX_BUFFER,
-          polygon_object.positions.data(),
+          m_scene->objects[geom_id].positions.data(),
           0,
-          sizeof(Vertex)
+          3 * sizeof(float)
           );
 
         rtcSetBuffer(
           m_scene->rtc_scene,
           geom_id,
           RTC_INDEX_BUFFER,
-          polygon_object.indices.data(),
+          m_scene->objects[geom_id].indices.data(),
           0,
           3 * sizeof(unsigned int)
           );
-
-        m_scene->objects[geom_id] = polygon_object;
       }
     }
 
@@ -187,16 +181,15 @@ void Pathtracer::construct(const std::string &_filename)
   rtcCommit(m_scene->rtc_scene);
 }
 
-void Pathtracer::create_threads()
+void Pathtracer::createThreads()
 {
   m_nthreads = boost::thread::hardware_concurrency();
-//  m_nthreads = 1;
 
   if(m_nthreads > 1)
-    std::cout << m_nthreads << " supported threads found" << std::endl;
+    std::cout << "\033[1;32m" << m_nthreads << " supported threads found.\033[0m" << std::endl;
 
   if(!(m_nthreads > 1))
-    std::cout << "Single thread found, system will function as a serial operation" << std::endl;
+    std::cout << "\033[1;32mSingle thread found, system will function as a serial operation.\033[0m" << std::endl;
 
   for(size_t i = 0; i < m_nthreads; ++i)
   {
@@ -225,7 +218,7 @@ void Pathtracer::create_threads()
   }
 }
 
-void Pathtracer::camera_threads()
+void Pathtracer::cameraBegin()
 {
   size_t bucket_size = m_settings->bucket_size;
   size_t task_count_x = ceil(m_image->width / static_cast<float>(bucket_size));
@@ -264,7 +257,7 @@ void Pathtracer::camera_threads()
     m_camera_threads[iterator]->join();
 }
 
-void Pathtracer::surface_threads(size_t _size, RayUncompressed* _batch)
+void Pathtracer::surfaceBegin(size_t _size, RayUncompressed* _batch)
 {
   int current_id = _batch[0].geomID;
   size_t current_index = 0;
@@ -313,12 +306,16 @@ Pathtracer::Pathtracer(const std::string &_filename)
 
   rtcInit(NULL);
 
+  m_texture_system = OpenImageIO::TextureSystem::create(true);
+
   construct(_filename);
-  create_threads();
+  createThreads();
 }
 
 Pathtracer::~Pathtracer()
 {
+  OpenImageIO::TextureSystem::destroy(m_texture_system, true);
+
   rtcDeleteScene(m_scene->rtc_scene);
   rtcExit();
 }
@@ -357,7 +354,7 @@ int Pathtracer::process()
   RayCompressed* batch_compressed = new RayCompressed[batch_size];
   RayUncompressed* batch_uncompressed = new RayUncompressed[batch_size];
 
-  camera_threads();
+  cameraBegin();
 
   std::string path;
   while(m_batch->pop(&path))
@@ -380,7 +377,7 @@ int Pathtracer::process()
 
     tbb::parallel_sort(&batch_uncompressed[0], &batch_uncompressed[batch_size]);
 
-    surface_threads(batch_size, batch_uncompressed);
+    surfaceBegin(batch_size, batch_uncompressed);
 
     boost::filesystem::remove(path);
   }

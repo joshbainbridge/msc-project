@@ -9,8 +9,6 @@ MSC_NAMESPACE_BEGIN
 class TentFilter : public FilterInterface
 {
 public:
-  TentFilter();
-
   void virtualFunc(const float value_one, const float value_two) const;
 
 private:

@@ -4,6 +4,7 @@
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <tbb/concurrent_queue.h>
+#include <OpenImageIO/texture.h>
 
 #include <core/Common.h>
 #include <core/Bin.h>
@@ -46,6 +47,8 @@ private:
   boost::shared_ptr< Batch > m_batch;
   boost::shared_ptr< Scene > m_scene;
   boost::shared_ptr< Image > m_image;
+
+  OpenImageIO::TextureSystem* m_texture_system;
 
   RandomGenerator m_random;
 };

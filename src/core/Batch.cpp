@@ -4,7 +4,6 @@ MSC_NAMESPACE_BEGIN
 
 Batch::~Batch()
 {
-  
 }
 
 void Batch::construct(const int _exponent)
@@ -63,21 +62,18 @@ bool Batch::pop(std::string* batch)
 
 void Batch::clear()
 {
-  std::cout << "\033[1;31mRemoving cached data...\033[0m" << std::endl;
-
   for(size_t iterator = 0; iterator < 6; ++iterator)
   {
     m_outfile[iterator].close();
     boost::filesystem::remove(m_paths[iterator]);
-    // std::cout << "deleted file " << m_paths[iterator] << std::endl;
   }
 
-  // std::string path;
-  // while(m_batch_queue.try_pop(path))
-  // {
-  //   boost::filesystem::remove(path);
-  //   std::cout << "deleted file " << path << std::endl;
-  // }
+  std::string path;
+  while(m_batch_queue.try_pop(path))
+  {
+    boost::filesystem::remove(path);
+    std::cout << "deleted file " << path << std::endl;
+  }
 }
 
 MSC_NAMESPACE_END

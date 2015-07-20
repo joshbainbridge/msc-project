@@ -124,6 +124,8 @@ int main(int argc, const char *argv[])
       
       framebuffer->draw();
 
+      std::cout << "\033[1;31mIteration " << iteration << " is complete.\033[0m" << std::endl;
+
       std::string title = "Pathtracer Iteration: " + std::to_string(iteration + 1);
       framebuffer->title(title);
 
@@ -166,7 +168,7 @@ int main(int argc, const char *argv[])
     file->setFrameBuffer(image, 1, width);
     file->writePixels(height);
 
-    std::cout << "output file named '" << output_file << "' writen to working directory" << std::endl;
+    std::cout << "\033[1;31mOutput file named '" << output_file << "' writen to working directory.\033[0m" << std::endl;
 
     delete[] image;
     delete file;

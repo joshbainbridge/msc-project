@@ -1,3 +1,6 @@
+#include <string>
+#include <iostream>
+
 #include <core/SurfaceThread.h>
 #include <core/PolygonObject.h>
 
@@ -5,12 +8,14 @@ MSC_NAMESPACE_BEGIN
 
 void SurfaceThread::start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch)
 {
+  m_texture_system = OpenImageIO::TextureSystem::create(true);
   m_thread = boost::thread(&SurfaceThread::process, this, _queue, _batch);
 }
 
 void SurfaceThread::join()
 {
   m_thread.join();
+  OpenImageIO::TextureSystem::destroy(m_texture_system, false);
 }
 
 void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch)
@@ -42,9 +47,15 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
         u * object->texcoords[2 * vertex02 + 1] + 
         v * object->texcoords[2 * vertex03 + 1];
 
-        m_image->samples[_batch[iterator].sampleID].r = x;
-        m_image->samples[_batch[iterator].sampleID].g = y;
-        m_image->samples[_batch[iterator].sampleID].b = 0.f;
+        float result[3];
+        OpenImageIO::TextureOpt options;
+
+        OpenImageIO::ustring filename = OpenImageIO::ustring("scenes/textures/floor_pattern.tx");
+        m_texture_system->texture(filename, options, x, y, 0, 0, 0, 0, 3, result);
+
+        m_image->samples[_batch[iterator].sampleID].r = result[0];
+        m_image->samples[_batch[iterator].sampleID].g = result[1];
+        m_image->samples[_batch[iterator].sampleID].b = result[2];
       }
     }
     else

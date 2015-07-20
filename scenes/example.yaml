@@ -14,11 +14,11 @@ settings:
 
 camera:
   type: Geometric
-  origin: [ 0, 150, 1000 ]
-  direction: [ 0, -0.05, -1 ]
+  translation: [ 0, 150, 1000 ]
+  rotation: [ 0, -0.05, -1 ]
   focal length: 180
   focal distance: 1000
-  aperture: 5.6
+  aperture: 64
 
 filter:
   type: Tent
@@ -32,7 +32,7 @@ object:
   type: Polygon
   filename: scenes/objects/dragon.obj
   translation: [ 0, 0, 0 ]
-  rotation: [ 0, 0, 0 ]
+  rotation: [ 0, 45, 0 ]
   scale: [ 10, 10, 10 ]
   material: 1
 
@@ -42,12 +42,17 @@ object:
   translation: [ 0, 0, 0 ]
   rotation: [ 0, 0, 0 ]
   scale: [ 10, 10, 10 ]
-  material: 1
+  material: 2
 
 material:
   type: Lambert
-  color: [ 0.2, 0.8, 0.1 ]
-  roughness: 34
+  texture: "scenes/textures/floor_pattern.tx"
+  color: [ 0.6, 0.6, 0.6 ]
+
+material:
+  type: Lambert
+  texture: "scenes/textures/floor_pattern.tx"
+  color: [ 0.98, 0.98, 0.98 ]
 
 light:
   type: Quad

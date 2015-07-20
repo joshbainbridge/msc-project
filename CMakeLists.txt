@@ -14,13 +14,9 @@ SET( CORE_SOURCES
   ${SRC}/core/Pathtracer.cpp
   ${SRC}/core/RandomGenerator.cpp
   ${SRC}/core/Batch.cpp
-  ${SRC}/core/CameraInterface.cpp
   ${SRC}/core/GeometricCamera.cpp
-  ${SRC}/core/FilterInterface.cpp
   ${SRC}/core/TentFilter.cpp
   ${SRC}/core/StratifiedSampler.cpp
-  # ${SRC}/core/LightInterface.cpp
-  # ${SRC}/core/QuadLight.cpp
   ${SRC}/core/CameraThread.cpp
   ${SRC}/core/SurfaceThread.cpp
   ${SRC}/core/RaySort.cpp
@@ -46,8 +42,6 @@ SET( CORE_HEADERS
   ${INC}/core/TentFilter.h
   ${INC}/core/SamplerInterface.h
   ${INC}/core/StratifiedSampler.h
-  # ${INC}/core/LightInterface.h
-  # ${INC}/core/QuadLight.h
   ${INC}/core/CameraThread.h
   ${INC}/core/SurfaceThread.h
   ${INC}/core/RayCompressed.h
