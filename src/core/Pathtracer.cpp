@@ -9,6 +9,7 @@
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
 #include <core/PolygonObject.h>
+#include <core/LambertShader.h>
 #include <core/RaySort.h>
 #include <core/RayIntersect.h>
 #include <core/RayDecompress.h>
@@ -126,50 +127,52 @@ void Pathtracer::construct(const std::string &_filename)
     {
       if(second["type"].as< std::string >() == "Polygon")
       {
-        PolygonObject polygon_object = second.as<PolygonObject>();
+        boost::shared_ptr< PolygonObject > polygon_object(new PolygonObject);
+        *polygon_object = second.as<PolygonObject>();
 
         size_t geom_id = rtcNewTriangleMesh(
           m_scene->rtc_scene,
           RTC_GEOMETRY_STATIC,
-          polygon_object.indices.size() / 3,
-          polygon_object.positions.size()
+          polygon_object->indices.size() / 3,
+          polygon_object->positions.size() / 4
           );
-
-        m_scene->objects[geom_id] = polygon_object;
 
         rtcSetBuffer(
           m_scene->rtc_scene,
           geom_id,
           RTC_VERTEX_BUFFER,
-          m_scene->objects[geom_id].positions.data(),
+          &(polygon_object->positions[0]),
           0,
-          3 * sizeof(float)
+          4 * sizeof(float)
           );
 
         rtcSetBuffer(
           m_scene->rtc_scene,
           geom_id,
           RTC_INDEX_BUFFER,
-          m_scene->objects[geom_id].indices.data(),
+          &(polygon_object->indices[0]),
           0,
           3 * sizeof(unsigned int)
           );
+
+        m_scene->objects.push_back(polygon_object);
+      }
+    }
+
+    if(first.as< std::string >() == "shader")
+    {
+      if(second["type"].as< std::string >() == "Lambert")
+      {
+        boost::shared_ptr< LambertShader > lambert_shader(new LambertShader);
+        *lambert_shader = second.as<LambertShader>();
+
+        m_scene->shaders.push_back(lambert_shader);
       }
     }
 
     if(first.as< std::string >() == "light")
     {
       if(second["type"].as< std::string >() == "Quad")
-      {
-        // PolygonObject* polygon_object = new PolygonObject();
-        // *polygon_object = second.as<PolygonObject>();
-        // m_scene.add(polygon_object);
-      }
-    }
-
-    if(first.as< std::string >() == "material")
-    {
-      if(second["type"].as< std::string >() == "Lambert")
       {
         // PolygonObject* polygon_object = new PolygonObject();
         // *polygon_object = second.as<PolygonObject>();

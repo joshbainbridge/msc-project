@@ -24,16 +24,14 @@ public:
   inline Vector3f up() const {return m_up;}
   inline Vector3f right() const {return m_right;}
   inline float focalLength() const {return m_focal_length;}
+  inline float aperture() const {return m_aperture;}
+  inline float focalDistance() const {return m_focal_distance;}
 
   void direction(const Vector3f &_dir);
   void origin(const Vector3f &_origin){m_origin = _origin;}
   void focalLength(const float _focal_length){m_focal_length = _focal_length;}
-
-  inline float aperture() const {return m_aperture;}
-  inline float focalDistance() const {return m_focal_distance;}
-
-  inline void aperture(const float _aperture){m_aperture = _aperture;}
-  inline void focalDistance(const float _focal_distance){m_focal_distance = _focal_distance;}
+  void aperture(const float _aperture){m_aperture = _aperture;}
+  void focalDistance(const float _focal_distance){m_focal_distance = _focal_distance;}
 
   void sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const;
 

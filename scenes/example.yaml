@@ -34,7 +34,7 @@ object:
   translation: [ 0, 0, 0 ]
   rotation: [ 0, 45, 0 ]
   scale: [ 10, 10, 10 ]
-  material: 1
+  shader: 0
 
 object:
   type: Polygon
@@ -42,17 +42,17 @@ object:
   translation: [ 0, 0, 0 ]
   rotation: [ 0, 0, 0 ]
   scale: [ 10, 10, 10 ]
-  material: 2
+  shader: 1
 
-material:
+shader:
   type: Lambert
-  texture: "scenes/textures/floor_pattern.tx"
-  color: [ 0.6, 0.6, 0.6 ]
+  colour: [ 0.6, 0.6, 0.6 ]
+  texture: "scenes/textures/dragon_pattern.tx"
 
-material:
+shader:
   type: Lambert
+  colour: [ 0.98, 0.98, 0.98 ]
   texture: "scenes/textures/floor_pattern.tx"
-  color: [ 0.98, 0.98, 0.98 ]
 
 light:
   type: Quad

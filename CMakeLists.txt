@@ -23,6 +23,8 @@ SET( CORE_SOURCES
   ${SRC}/core/RayIntersect.cpp
   ${SRC}/core/RayDecompress.cpp
   ${SRC}/core/RayBoundingbox.cpp
+  ${SRC}/core/LambertShader.cpp
+  ${SRC}/core/NullShader.cpp
   )
 
 SET( CORE_HEADERS
@@ -51,6 +53,9 @@ SET( CORE_HEADERS
   ${INC}/core/RayDecompress.h
   ${INC}/core/RayBoundingbox.h
   ${INC}/core/PolygonObject.h
+  ${INC}/core/ShaderInterface.h
+  ${INC}/core/NullShader.h
+  ${INC}/core/LambertShader.h
   )
 
 SET( FRM_SOURCES

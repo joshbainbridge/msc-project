@@ -23,7 +23,7 @@ struct PolygonObject
   std::vector< float > texcoords;
   std::vector< unsigned int > indices;
 
-  size_t material_id;
+  int shader;
 };
 
 MSC_NAMESPACE_END
@@ -39,7 +39,7 @@ template<> struct convert<msc::PolygonObject>
     node["object"]["translation"] = rhs.translation;
     node["object"]["rotation"] = rhs.rotation;
     node["object"]["scale"] = rhs.scale;
-    node["object"]["material"] = rhs.material_id;
+    node["object"]["shader"] = rhs.shader;
     return node;
   }
 
@@ -52,7 +52,7 @@ template<> struct convert<msc::PolygonObject>
     rhs.translation = node["translation"].as<msc::Vector3f>();
     rhs.rotation = node["rotation"].as<msc::Vector3f>();
     rhs.scale = node["scale"].as<msc::Vector3f>();
-    rhs.material_id = node["material"].as<int>();
+    rhs.shader = node["shader"].as<int>();
 
     tinyobj::shape_t shape;
     std::string err = tinyobj::LoadObj(shape, rhs.filename.c_str());
@@ -60,7 +60,6 @@ template<> struct convert<msc::PolygonObject>
     if(!err.empty())
       std::cout << err << std::endl;
 
-    rhs.positions.swap(shape.mesh.positions);
     rhs.normals.swap(shape.mesh.normals);
     rhs.texcoords.swap(shape.mesh.texcoords);
     rhs.indices.swap(shape.mesh.indices);
@@ -73,9 +72,15 @@ template<> struct convert<msc::PolygonObject>
     transform *= Eigen::AlignedScaling3f(rhs.scale);
 
     msc::Vector3fMap mapped_data(NULL);
-    for(size_t i = 0; i < rhs.positions.size() / 3; ++i)
+    rhs.positions.resize((shape.mesh.positions.size() / 3) * 4);
+    for(size_t i = 0; i < shape.mesh.positions.size() / 3; ++i)
     {
-      new (&mapped_data) msc::Vector3fMap((float*) &(rhs.positions[3 * i]));
+      rhs.positions[4 * i + 0] = shape.mesh.positions[3 * i + 0];
+      rhs.positions[4 * i + 1] = shape.mesh.positions[3 * i + 1];
+      rhs.positions[4 * i + 2] = shape.mesh.positions[3 * i + 2];
+      rhs.positions[4 * i + 3] = 0.f;
+
+      new (&mapped_data) msc::Vector3fMap((float*) &(rhs.positions[4 * i + 0]));
       mapped_data = transform * mapped_data;
     }
 
