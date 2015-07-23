@@ -10,8 +10,7 @@
 #include <OpenImageIO/texture.h>
 
 #include <core/Common.h>
-#include <core/EmbreeWrapper.h>
-#include <core/Batch.h>
+#include <core/DirectionalBins.h>
 #include <core/CameraThread.h>
 #include <core/SurfaceThread.h>
 #include <core/Settings.h>
@@ -23,6 +22,7 @@
 #include <core/RayUncompressed.h>
 #include <core/RayCompressed.h>
 #include <core/RandomGenerator.h>
+#include <core/BatchItem.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -38,7 +38,7 @@ public:
   int process();
 
 private:
-  boost::shared_ptr< Batch > m_batch;
+  boost::shared_ptr< DirectionalBins > m_bins;
   boost::shared_ptr< Settings > m_settings;
   boost::shared_ptr< Image > m_image;
   boost::shared_ptr< Scene > m_scene;
@@ -50,12 +50,11 @@ private:
   std::vector< boost::shared_ptr< CameraThread > > m_camera_threads;
   std::vector< boost::shared_ptr< SurfaceThread > > m_surface_threads;
 
-  tbb::concurrent_queue< CameraTask > m_camera_queue;
-  tbb::concurrent_queue< SurfaceTask > m_surface_queue;
+  tbb::concurrent_queue< BatchItem > m_batch_queue;
+  tbb::concurrent_queue< CameraTask > m_camera_queue; // Should be replaced
+  tbb::concurrent_queue< SurfaceTask > m_surface_queue; // Should be replaced
 
   OpenImageIO::TextureSystem* m_texture_system;
-  
-  RandomGenerator m_random;
 
   void construct(const std::string &_filename);
   void createThreads();

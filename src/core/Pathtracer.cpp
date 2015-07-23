@@ -4,7 +4,8 @@
 #include <boost/thread.hpp>
 
 #include <core/Pathtracer.h>
-#include <core/Bin.h>
+#include <core/EmbreeWrapper.h>
+#include <core/Buffer.h>
 #include <core/GeometricCamera.h>
 #include <core/TentFilter.h>
 #include <core/StratifiedSampler.h>
@@ -56,8 +57,8 @@ void Pathtracer::construct(const std::string &_filename)
     settings->ray_depth = 4;
     settings->bucket_size = 16;
     settings->shading_size = 4096;
-    settings->bin_exponent = 11;
-    settings->batch_exponent = 25;
+    settings->buffer_exponent = 11;
+    settings->bin_exponent = 25;
 
     if(node_setup["settings"])
       *settings = node_setup["settings"].as<Settings>();
@@ -113,7 +114,7 @@ void Pathtracer::construct(const std::string &_filename)
     }
   }
 
-  m_batch.reset(new Batch);
+  m_bins.reset(new DirectionalBins);
 
   m_scene.reset(new Scene);
   m_scene->rtc_scene = rtcNewScene(RTC_SCENE_STATIC, RTC_INTERSECT1);
@@ -169,6 +170,12 @@ void Pathtracer::construct(const std::string &_filename)
         m_scene->shaders.push_back(lambert_shader);
       }
     }
+  }
+  
+  for(YAML::const_iterator light_iterator = node_scene.begin(); light_iterator != node_scene.end(); ++light_iterator)
+  {
+    YAML::Node first = light_iterator->first;
+    YAML::Node second = light_iterator->second;
 
     if(first.as< std::string >() == "light")
     {
@@ -196,25 +203,25 @@ void Pathtracer::createThreads()
 
   for(size_t i = 0; i < m_nthreads; ++i)
   {
-    boost::shared_ptr< Bin > local_bin(new Bin());
-    local_bin->size = pow(2, m_settings->bin_exponent);
-    for(size_t iterator_bin = 0; iterator_bin < 6; ++iterator_bin)
+    boost::shared_ptr< Buffer > buffer(new Buffer());
+    buffer->size = pow(2, m_settings->buffer_exponent);
+    for(size_t iterator_buffer = 0; iterator_buffer < 6; ++iterator_buffer)
     {
-      local_bin->bin[iterator_bin] = boost::shared_ptr< RayCompressed[] >(new RayCompressed[local_bin->size]);
-      local_bin->index[iterator_bin] = 0;
+      buffer->direction[iterator_buffer].resize(buffer->size);
+      buffer->index[iterator_buffer] = 0;
     }
     
     m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(
-      local_bin,
-      m_batch,
+      buffer,
+      m_bins,
       m_camera,
       m_sampler,
       m_image
       )));
     
     m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
-      local_bin,
-      m_batch,
+      buffer,
+      m_bins,
       m_scene,
       m_image
       )));
@@ -250,8 +257,6 @@ void Pathtracer::cameraBegin()
       m_camera_queue.push(task);
     }
   }
-
-  // std::cout << task_count_x * task_count_y << " render tasks created" << std::endl;
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
     m_camera_threads[iterator]->start(&m_camera_queue);
@@ -351,44 +356,48 @@ static inline bool operator<(const RayUncompressed &lhs, const RayUncompressed &
 
 int Pathtracer::process()
 {
-  m_batch->construct(m_settings->batch_exponent);
+  m_bins->construct(m_settings->bin_exponent, &m_batch_queue);
 
-  size_t batch_size = pow(2, m_settings->batch_exponent);
-  RayCompressed* batch_compressed = new RayCompressed[batch_size];
-  RayUncompressed* batch_uncompressed = new RayUncompressed[batch_size];
+  size_t max_size = pow(2, m_settings->bin_exponent);
+  RayCompressed* batch_compressed = new RayCompressed[max_size];
+  RayUncompressed* batch_uncompressed = new RayUncompressed[max_size];
 
-  cameraBegin();
+  cameraBegin(); // replace with tbb
+  // Then flush rays here
+  // tbb primary rays
+  m_bins->flush();
 
-  std::string path;
-  while(m_batch->pop(&path))
+  BatchItem batch_info;
+  while(m_bins->pop(&batch_info))
   {
+    // Move into seperate function
     std::ifstream infile;
-
-    infile.open(path);
-    infile.read((char *)batch_compressed, sizeof(RayCompressed) * batch_size);
+    infile.open(batch_info.filename);
+    infile.read((char *)batch_compressed, sizeof(RayCompressed) * batch_info.size);
     infile.close();
 
-    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_size, 1024), RayDecompress(batch_compressed, batch_uncompressed));
+    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_info.size, 1024), RayDecompress(batch_compressed, batch_uncompressed));
 
     RayBoundingbox limits(batch_uncompressed);
-    tbb::parallel_reduce(tbb::blocked_range< size_t >(0, batch_size, 1024), limits);
+    tbb::parallel_reduce(tbb::blocked_range< size_t >(0, batch_info.size, 1024), limits);
 
-    RaySort &task = *new(tbb::task::allocate_root()) RaySort(0, batch_size, limits.value(), batch_uncompressed);
+    RaySort &task = *new(tbb::task::allocate_root()) RaySort(0, batch_info.size, limits.value(), batch_uncompressed);
     tbb::task::spawn_root_and_wait(task);
 
-    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_size, 128), RayIntersect(&(*m_scene), batch_uncompressed));
+    tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_info.size, 128), RayIntersect(&(*m_scene), batch_uncompressed));
 
-    tbb::parallel_sort(&batch_uncompressed[0], &batch_uncompressed[batch_size]);
+    tbb::parallel_sort(&batch_uncompressed[0], &batch_uncompressed[batch_info.size]);
+    surfaceBegin(batch_info.size, batch_uncompressed); // replace with tbb
+    // Then flush rays here
+    // tbb secondary rays
 
-    surfaceBegin(batch_size, batch_uncompressed);
-
-    boost::filesystem::remove(path);
+    boost::filesystem::remove(batch_info.filename);
   }
 
   delete[] batch_uncompressed;
   delete[] batch_compressed;
 
-  m_batch->clear();
+  m_bins->clear();
 
   size_t sample_count = m_image->base * m_image->base;
   for(size_t iterator_x = 0; iterator_x < m_image->width; ++iterator_x)

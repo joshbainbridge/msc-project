@@ -13,17 +13,17 @@
 
 #include <core/Common.h>
 #include <core/RayCompressed.h>
+#include <core/BatchItem.h>
 
 MSC_NAMESPACE_BEGIN
 
-class Batch
+class DirectionalBins
 {
 public:
-  ~Batch();
-
-  void construct(const int _exponent);
+  void construct(const int _exponent, tbb::concurrent_queue< BatchItem >* _batch_queue);
   void add(const int _size, const int _index, RayCompressed* _data);
-  bool pop(std::string* batch);
+  bool pop(BatchItem* _batch);
+  void flush();
   void clear();
 
 private:
@@ -35,7 +35,7 @@ private:
   RayCompressed* m_ends[6];
   boost::mutex m_mutexes[6];
 
-  tbb::concurrent_queue< std::string > m_batch_queue;
+  tbb::concurrent_queue< BatchItem >* m_batch_queue;
 };
 
 MSC_NAMESPACE_END

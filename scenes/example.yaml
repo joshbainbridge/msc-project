@@ -9,16 +9,16 @@ settings:
   ray depth: 3
   bucket size: 16
   shading size: 4096
-  bin exponent: 11
-  batch exponent: 15
+  buffer exponent: 14
+  bin exponent: 18
 
 camera:
   type: Geometric
   translation: [ 0, 150, 1000 ]
   rotation: [ 0, -0.05, -1 ]
   focal length: 180
-  focal distance: 1000
-  aperture: 64
+  focal distance: 990
+  aperture: 5.6
 
 filter:
   type: Tent

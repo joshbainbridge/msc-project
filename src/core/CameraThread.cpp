@@ -47,17 +47,23 @@ void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
           int axis = (fabs(rays[iterator].dir[max]) < fabs(rays[iterator].dir[2])) ? 2 : max;
           int cardinal = (rays[iterator].dir[axis] < 0.f) ? axis : axis + 3;
 
-          if(m_local_bin->index[cardinal] == m_local_bin->size)
+          if(m_buffer->index[cardinal] == m_buffer->size)
           {
-            m_batch->add(m_local_bin->size, cardinal, &(m_local_bin->bin[cardinal][0]));
-            m_local_bin->index[cardinal] = 0;
+            m_bin->add(m_buffer->size, cardinal, &(m_buffer->direction[cardinal][0]));
+            m_buffer->index[cardinal] = 0;
           }
 
-          m_local_bin->bin[cardinal][m_local_bin->index[cardinal]] = rays[iterator];
-          m_local_bin->index[cardinal] += 1;
+          m_buffer->direction[cardinal][m_buffer->index[cardinal]] = rays[iterator];
+          m_buffer->index[cardinal] += 1;
         }
       }
     }
+  }
+
+  for(size_t iterator = 0; iterator < 6; ++iterator)
+  {
+    m_bin->add(m_buffer->size, iterator, &(m_buffer->direction[iterator][0]));
+    m_buffer->index[iterator] = 0;
   }
 
   delete[] samples;

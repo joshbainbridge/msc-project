@@ -15,8 +15,7 @@ void LambertShader::evaluate(
   float result[3] = {1.f, 1.f, 1.f};
   OpenImageIO::TextureOpt options;
 
-  OpenImageIO::ustring filename = OpenImageIO::ustring(m_texture.c_str());
-  _texture_system->texture(filename, options, _u, _v, 0, 0, 0, 0, 3, result);
+  _texture_system->texture(m_texture, options, _u, _v, 0, 0, 0, 0, 3, result);
 
   *_weight = m_colour * Colour3f(result[0], result[1], result[2]);
 }

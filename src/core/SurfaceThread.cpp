@@ -70,16 +70,11 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
           s * object->texcoords[2 * vertex02 + 1] + 
           t * object->texcoords[2 * vertex03 + 1];
 
-          // Find the texture colour
-          // float result[3];
-          // OpenImageIO::TextureOpt options;
-
-          // OpenImageIO::ustring filename = OpenImageIO::ustring("scenes/textures/floor_pattern.tx");
-          // m_texture_system->texture(filename, options, u, v, 0, 0, 0, 0, 3, result);
+          // Evaluate shader
           Colour3f weight;
           shader->evaluate(Vector3f(), Vector3f(), Vector3f(), m_texture_system, u, v, &weight);
 
-          // Add texture colour to samples
+          // Add shader colour to samples
           m_image->samples[_batch[iterator].sampleID].r = weight.x();
           m_image->samples[_batch[iterator].sampleID].g = weight.y();
           m_image->samples[_batch[iterator].sampleID].b = weight.z();

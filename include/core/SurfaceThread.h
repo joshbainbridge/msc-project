@@ -7,8 +7,8 @@
 #include <OpenImageIO/texture.h>
 
 #include <core/Common.h>
-#include <core/Bin.h>
-#include <core/Batch.h>
+#include <core/Buffer.h>
+#include <core/DirectionalBins.h>
 #include <core/Scene.h>
 #include <core/Image.h>
 #include <core/RayUncompressed.h>
@@ -26,25 +26,25 @@ class SurfaceThread
 { 
 public:
   SurfaceThread(
-    boost::shared_ptr< Bin > _local_bin,
-    boost::shared_ptr< Batch > _batch,
+    boost::shared_ptr< Buffer > _buffer,
+    boost::shared_ptr< DirectionalBins > _bin,
     boost::shared_ptr< Scene > _scene,
     boost::shared_ptr< Image > _image
     )
-    : m_local_bin(_local_bin)
-    , m_batch(_batch)
+    : m_buffer(_buffer)
+    , m_bin(_bin)
     , m_scene(_scene)
     , m_image(_image)
   {;}
 
-  void start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch);
+  void start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _bin);
   void join();
-  void process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch);
+  void process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _bin);
 
 private:
   boost::thread m_thread;
-  boost::shared_ptr< Bin > m_local_bin;
-  boost::shared_ptr< Batch > m_batch;
+  boost::shared_ptr< Buffer > m_buffer;
+  boost::shared_ptr< DirectionalBins > m_bin;
   boost::shared_ptr< Scene > m_scene;
   boost::shared_ptr< Image > m_image;
 

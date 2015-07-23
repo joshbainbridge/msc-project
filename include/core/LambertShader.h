@@ -22,14 +22,14 @@ public:
     ) const;
 
   inline Colour3f colour() const {return m_colour;}
-  inline std::string texture() const {return m_texture;}
+  inline std::string texture() const {return m_texture.string();}
 
   inline void colour(const Colour3f _colour){m_colour = _colour;}
-  inline void texture(const std::string _texture){m_texture = _texture;}
+  inline void texture(const std::string _texture){m_texture = OpenImageIO::ustring(_texture);}
 
 private:
   Colour3f m_colour;
-  std::string m_texture;
+  OpenImageIO::ustring m_texture;
 };
 
 MSC_NAMESPACE_END
