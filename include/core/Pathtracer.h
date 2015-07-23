@@ -46,13 +46,14 @@ private:
   boost::shared_ptr< FilterInterface > m_filter;
   boost::shared_ptr< SamplerInterface > m_sampler;
 
+  // Should be removed
   size_t m_nthreads;
   std::vector< boost::shared_ptr< CameraThread > > m_camera_threads;
   std::vector< boost::shared_ptr< SurfaceThread > > m_surface_threads;
 
   tbb::concurrent_queue< BatchItem > m_batch_queue;
-  tbb::concurrent_queue< CameraTask > m_camera_queue; // Should be replaced
-  tbb::concurrent_queue< SurfaceTask > m_surface_queue; // Should be replaced
+  tbb::concurrent_queue< CameraTask > m_camera_queue;
+  tbb::concurrent_queue< SurfaceTask > m_surface_queue;
 
   OpenImageIO::TextureSystem* m_texture_system;
 

@@ -114,8 +114,6 @@ void Pathtracer::construct(const std::string &_filename)
     }
   }
 
-  m_bins.reset(new DirectionalBins);
-
   m_scene.reset(new Scene);
   m_scene->rtc_scene = rtcNewScene(RTC_SCENE_STATIC, RTC_INTERSECT1);
   
@@ -201,30 +199,18 @@ void Pathtracer::createThreads()
   if(!(m_nthreads > 1))
     std::cout << "\033[1;32mSingle thread found, system will function as a serial operation.\033[0m" << std::endl;
 
+  Buffer buffer;
+  buffer.size = pow(2, m_settings->buffer_exponent);
+  for(size_t iterator_buffer = 0; iterator_buffer < 6; ++iterator_buffer)
+  {
+    buffer.direction[iterator_buffer].resize(buffer.size);
+    buffer.index[iterator_buffer] = 0;
+  }
+
   for(size_t i = 0; i < m_nthreads; ++i)
   {
-    boost::shared_ptr< Buffer > buffer(new Buffer());
-    buffer->size = pow(2, m_settings->buffer_exponent);
-    for(size_t iterator_buffer = 0; iterator_buffer < 6; ++iterator_buffer)
-    {
-      buffer->direction[iterator_buffer].resize(buffer->size);
-      buffer->index[iterator_buffer] = 0;
-    }
-    
-    m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(
-      buffer,
-      m_bins,
-      m_camera,
-      m_sampler,
-      m_image
-      )));
-    
-    m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(
-      buffer,
-      m_bins,
-      m_scene,
-      m_image
-      )));
+    m_camera_threads.push_back(boost::shared_ptr< CameraThread >(new CameraThread(buffer)));
+    m_surface_threads.push_back(boost::shared_ptr< SurfaceThread >(new SurfaceThread(buffer)));
   }
 }
 
@@ -259,7 +245,14 @@ void Pathtracer::cameraBegin()
   }
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
-    m_camera_threads[iterator]->start(&m_camera_queue);
+    m_camera_threads[iterator]->start(
+      m_bins.get(),
+      m_camera.get(),
+      m_sampler.get(),
+      m_image.get(),
+      &m_camera_queue,
+      &m_batch_queue
+      );
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
     m_camera_threads[iterator]->join();
@@ -301,7 +294,14 @@ void Pathtracer::surfaceBegin(size_t _size, RayUncompressed* _batch)
   m_surface_queue.push(task);
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
-    m_surface_threads[iterator]->start(&m_surface_queue, _batch);
+    m_surface_threads[iterator]->start(
+      m_bins.get(),
+      m_scene.get(),
+      m_image.get(),
+      &m_surface_queue,
+      &m_batch_queue,
+      _batch
+      );
 
   for(int iterator = 0; iterator < m_nthreads; ++iterator)
     m_surface_threads[iterator]->join();
@@ -356,19 +356,17 @@ static inline bool operator<(const RayUncompressed &lhs, const RayUncompressed &
 
 int Pathtracer::process()
 {
-  m_bins->construct(m_settings->bin_exponent, &m_batch_queue);
+  m_bins.reset(new DirectionalBins(m_settings->bin_exponent));
+  
+  size_t bin_size = pow(2, m_settings->bin_exponent);
+  RayCompressed* batch_compressed = new RayCompressed[bin_size];
+  RayUncompressed* batch_uncompressed = new RayUncompressed[bin_size];
 
-  size_t max_size = pow(2, m_settings->bin_exponent);
-  RayCompressed* batch_compressed = new RayCompressed[max_size];
-  RayUncompressed* batch_uncompressed = new RayUncompressed[max_size];
-
-  cameraBegin(); // replace with tbb
-  // Then flush rays here
-  // tbb primary rays
-  m_bins->flush();
-
+  cameraBegin(); // replace with tbb (primary rays)
+  m_bins->flush(&m_batch_queue);
+  
   BatchItem batch_info;
-  while(m_bins->pop(&batch_info))
+  while(m_batch_queue.try_pop(batch_info))
   {
     // Move into seperate function
     std::ifstream infile;
@@ -386,18 +384,17 @@ int Pathtracer::process()
 
     tbb::parallel_for(tbb::blocked_range< size_t >(0, batch_info.size, 128), RayIntersect(&(*m_scene), batch_uncompressed));
 
+    // replace with tbb (secondary rays)
     tbb::parallel_sort(&batch_uncompressed[0], &batch_uncompressed[batch_info.size]);
-    surfaceBegin(batch_info.size, batch_uncompressed); // replace with tbb
-    // Then flush rays here
-    // tbb secondary rays
+    surfaceBegin(batch_info.size, batch_uncompressed);
+
+    // m_bins->flush(&m_batch_queue);
 
     boost::filesystem::remove(batch_info.filename);
   }
 
   delete[] batch_uncompressed;
   delete[] batch_compressed;
-
-  m_bins->clear();
 
   size_t sample_count = m_image->base * m_image->base;
   for(size_t iterator_x = 0; iterator_x < m_image->width; ++iterator_x)

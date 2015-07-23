@@ -9,8 +9,8 @@ settings:
   ray depth: 3
   bucket size: 16
   shading size: 4096
-  buffer exponent: 14
-  bin exponent: 18
+  buffer exponent: 11
+  bin exponent: 15
 
 camera:
   type: Geometric

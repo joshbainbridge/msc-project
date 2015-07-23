@@ -17,25 +17,30 @@
 
 MSC_NAMESPACE_BEGIN
 
+struct Bin
+{
+  boost::iostreams::mapped_file_sink outfile;
+  std::string path;
+
+  RayCompressed* pointer;
+  RayCompressed* end;
+  size_t size;
+
+  boost::mutex mutex;
+};
+
 class DirectionalBins
 {
 public:
-  void construct(const int _exponent, tbb::concurrent_queue< BatchItem >* _batch_queue);
-  void add(const int _size, const int _index, RayCompressed* _data);
-  bool pop(BatchItem* _batch);
-  void flush();
-  void clear();
+  DirectionalBins(size_t _exponent);
+  ~DirectionalBins();
+
+  void add(const int _size, const int _cardinal, RayCompressed* _data, tbb::concurrent_queue< BatchItem >* _batch_queue);
+  void flush(tbb::concurrent_queue< BatchItem >* _batch_queue);
 
 private:
-  size_t m_size;
-
-  std::string m_paths[6];
-  boost::iostreams::mapped_file_sink m_outfile[6];
-  RayCompressed* m_pointers[6];
-  RayCompressed* m_ends[6];
-  boost::mutex m_mutexes[6];
-
-  tbb::concurrent_queue< BatchItem >* m_batch_queue;
+  size_t m_exponent;
+  Bin m_bin[6];
 };
 
 MSC_NAMESPACE_END

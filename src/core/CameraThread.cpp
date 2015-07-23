@@ -3,9 +3,16 @@
 
 MSC_NAMESPACE_BEGIN
 
-void CameraThread::start(tbb::concurrent_queue< CameraTask >* _queue)
+void CameraThread::start(
+  DirectionalBins* _bin,
+  CameraInterface* _camera,
+  SamplerInterface* _sampler,
+  Image* _image,
+  tbb::concurrent_queue< CameraTask >* _camera_queue,
+  tbb::concurrent_queue< BatchItem >* _batch_queue
+  )
 {
-  m_thread = boost::thread(&CameraThread::process, this, _queue);
+  m_thread = boost::thread(&CameraThread::process, this, _bin, _camera, _sampler, _image, _camera_queue, _batch_queue);
 }
 
 void CameraThread::join()
@@ -13,33 +20,39 @@ void CameraThread::join()
   m_thread.join();
 }
 
-void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
+void CameraThread::process(
+  DirectionalBins* _bin,
+  CameraInterface* _camera,
+  SamplerInterface* _sampler,
+  Image* _image,
+  tbb::concurrent_queue< CameraTask >* _camera_queue,
+  tbb::concurrent_queue< BatchItem >* _batch_queue
+  )
 {
-  CameraTask task;
-
-  size_t count = m_image->base * m_image->base;
+  size_t count = _image->base * _image->base;
 
   float* samples = new float[count * 2];
   RayCompressed* rays = new RayCompressed[count];
 
-  while(_queue->try_pop(task))
+  CameraTask task;
+  while(_camera_queue->try_pop(task))
   {
     for(size_t iterator_x = task.begin_x; iterator_x < task.end_x; ++iterator_x)
     {
       for(size_t iterator_y = task.begin_y; iterator_y < task.end_y; ++iterator_y)
       {
-        m_sampler->sample(m_image->base, &m_random, samples);
+        _sampler->sample(_image->base, &m_random, samples);
 
         for(size_t iterator = 0; iterator < count; ++iterator)
         {
-          samples[2 * iterator + 0] = (((iterator_x + samples[2 * iterator + 0]) * 2.f - m_image->width) / m_image->width) * 36.f;
-          samples[2 * iterator + 1] = (((iterator_y + samples[2 * iterator + 1]) * 2.f - m_image->height) / m_image->width) * 36.f;
-          rays[iterator].sampleID = (iterator_x * m_image->height * count) + (iterator_y * count) + iterator;
-          m_image->samples[rays[iterator].sampleID].x = samples[2 * iterator + 0];
-          m_image->samples[rays[iterator].sampleID].y = samples[2 * iterator + 1];
+          samples[2 * iterator + 0] = (((iterator_x + samples[2 * iterator + 0]) * 2.f - _image->width) / _image->width) * 36.f;
+          samples[2 * iterator + 1] = (((iterator_y + samples[2 * iterator + 1]) * 2.f - _image->height) / _image->width) * 36.f;
+          rays[iterator].sampleID = (iterator_x * _image->height * count) + (iterator_y * count) + iterator;
+          _image->samples[rays[iterator].sampleID].x = samples[2 * iterator + 0];
+          _image->samples[rays[iterator].sampleID].y = samples[2 * iterator + 1];
         }
 
-        m_camera->sample(count, samples, &m_random, rays);
+        _camera->sample(count, samples, &m_random, rays);
 
         for(size_t iterator = 0; iterator < count; ++iterator)
         {
@@ -47,14 +60,14 @@ void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
           int axis = (fabs(rays[iterator].dir[max]) < fabs(rays[iterator].dir[2])) ? 2 : max;
           int cardinal = (rays[iterator].dir[axis] < 0.f) ? axis : axis + 3;
 
-          if(m_buffer->index[cardinal] == m_buffer->size)
+          if(m_buffer.index[cardinal] == m_buffer.size)
           {
-            m_bin->add(m_buffer->size, cardinal, &(m_buffer->direction[cardinal][0]));
-            m_buffer->index[cardinal] = 0;
+            _bin->add(m_buffer.size, cardinal, &(m_buffer.direction[cardinal][0]), _batch_queue);
+            m_buffer.index[cardinal] = 0;
           }
 
-          m_buffer->direction[cardinal][m_buffer->index[cardinal]] = rays[iterator];
-          m_buffer->index[cardinal] += 1;
+          m_buffer.direction[cardinal][m_buffer.index[cardinal]] = rays[iterator];
+          m_buffer.index[cardinal] += 1;
         }
       }
     }
@@ -62,8 +75,8 @@ void CameraThread::process(tbb::concurrent_queue< CameraTask >* _queue)
 
   for(size_t iterator = 0; iterator < 6; ++iterator)
   {
-    m_bin->add(m_buffer->size, iterator, &(m_buffer->direction[iterator][0]));
-    m_buffer->index[iterator] = 0;
+    _bin->add(m_buffer.size, iterator, &(m_buffer.direction[iterator][0]), _batch_queue);
+    m_buffer.index[iterator] = 0;
   }
 
   delete[] samples;

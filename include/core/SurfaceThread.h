@@ -11,6 +11,7 @@
 #include <core/DirectionalBins.h>
 #include <core/Scene.h>
 #include <core/Image.h>
+#include <core/BatchItem.h>
 #include <core/RayUncompressed.h>
 #include <core/RandomGenerator.h>
 
@@ -25,31 +26,32 @@ struct SurfaceTask
 class SurfaceThread
 { 
 public:
-  SurfaceThread(
-    boost::shared_ptr< Buffer > _buffer,
-    boost::shared_ptr< DirectionalBins > _bin,
-    boost::shared_ptr< Scene > _scene,
-    boost::shared_ptr< Image > _image
-    )
-    : m_buffer(_buffer)
-    , m_bin(_bin)
-    , m_scene(_scene)
-    , m_image(_image)
-  {;}
+  SurfaceThread(Buffer _buffer) : m_buffer(_buffer) {;}
 
-  void start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _bin);
+  void start(
+    DirectionalBins* _bin,
+    Scene* _scene,
+    Image* _image,
+    tbb::concurrent_queue< SurfaceTask >* _surface_queue,
+    tbb::concurrent_queue< BatchItem >* _batch_queue,
+    RayUncompressed* _batch
+    );
+
   void join();
-  void process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _bin);
+  void process(
+    DirectionalBins* _bin,
+    Scene* _scene,
+    Image* _image,
+    tbb::concurrent_queue< SurfaceTask >* _surface_queue,
+    tbb::concurrent_queue< BatchItem >* _batch_queue,
+    RayUncompressed* _batch
+    );
 
 private:
   boost::thread m_thread;
-  boost::shared_ptr< Buffer > m_buffer;
-  boost::shared_ptr< DirectionalBins > m_bin;
-  boost::shared_ptr< Scene > m_scene;
-  boost::shared_ptr< Image > m_image;
+  Buffer m_buffer;
 
   OpenImageIO::TextureSystem* m_texture_system;
-
   RandomGenerator m_random;
 };
 

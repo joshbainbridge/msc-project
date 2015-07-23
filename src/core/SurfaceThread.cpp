@@ -7,10 +7,17 @@
 
 MSC_NAMESPACE_BEGIN
 
-void SurfaceThread::start(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch)
+void SurfaceThread::start(
+  DirectionalBins* _bin,
+  Scene* _scene,
+  Image* _image,
+  tbb::concurrent_queue< SurfaceTask >* _surface_queue,
+  tbb::concurrent_queue< BatchItem >* _batch_queue,
+  RayUncompressed* _batch
+  )
 {
   m_texture_system = OpenImageIO::TextureSystem::create(true);
-  m_thread = boost::thread(&SurfaceThread::process, this, _queue, _batch);
+  m_thread = boost::thread(&SurfaceThread::process, this, _bin, _scene, _image, _surface_queue, _batch_queue, _batch);
 }
 
 void SurfaceThread::join()
@@ -19,12 +26,18 @@ void SurfaceThread::join()
   OpenImageIO::TextureSystem::destroy(m_texture_system, false);
 }
 
-void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUncompressed* _batch)
+void SurfaceThread::process(
+  DirectionalBins* _bin,
+  Scene* _scene,
+  Image* _image,
+  tbb::concurrent_queue< SurfaceTask >* _surface_queue,
+  tbb::concurrent_queue< BatchItem >* _batch_queue,
+  RayUncompressed* _batch
+  )
 {
-  SurfaceTask task;
-
   // Hit point group processing
-  while(_queue->try_pop(task))
+  SurfaceTask task;
+  while(_surface_queue->try_pop(task))
   {
     // Get geometry id for group
     size_t geom_id = _batch[task.begin].geomID;
@@ -33,19 +46,19 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
     if(geom_id != -1)
     {
       // Which object did they hit
-      PolygonObject* object = m_scene->objects[geom_id].get();
+      PolygonObject* object = _scene->objects[geom_id].get();
 
       // Check if object is a light
       int light_id = -1;
 
-      std::map<int, int>::const_iterator it = m_scene->shaders_to_lights.find(object->shader);
-      if(it != m_scene->shaders_to_lights.end())
+      std::map<int, int>::const_iterator it = _scene->shaders_to_lights.find(object->shader);
+      if(it != _scene->shaders_to_lights.end())
         light_id = it->second;
 
       // If object is not a light
       if(light_id == -1)
       {
-        ShaderInterface* shader = m_scene->shaders[object->shader].get();
+        ShaderInterface* shader = _scene->shaders[object->shader].get();
 
         //Loopt through the group
         for(size_t iterator = task.begin; iterator < task.end; ++iterator)
@@ -75,9 +88,9 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
           shader->evaluate(Vector3f(), Vector3f(), Vector3f(), m_texture_system, u, v, &weight);
 
           // Add shader colour to samples
-          m_image->samples[_batch[iterator].sampleID].r = weight.x();
-          m_image->samples[_batch[iterator].sampleID].g = weight.y();
-          m_image->samples[_batch[iterator].sampleID].b = weight.z();
+          _image->samples[_batch[iterator].sampleID].r = weight.x();
+          _image->samples[_batch[iterator].sampleID].g = weight.y();
+          _image->samples[_batch[iterator].sampleID].b = weight.z();
         }
       }
       // If object is a light
@@ -87,9 +100,9 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
         for(size_t iterator = task.begin; iterator < task.end; ++iterator)
         {
           // Set samples to white
-          m_image->samples[_batch[iterator].sampleID].r = 1.f;
-          m_image->samples[_batch[iterator].sampleID].g = 1.f;
-          m_image->samples[_batch[iterator].sampleID].b = 1.f;
+          _image->samples[_batch[iterator].sampleID].r = 1.f;
+          _image->samples[_batch[iterator].sampleID].g = 1.f;
+          _image->samples[_batch[iterator].sampleID].b = 1.f;
         }
       }
     }
@@ -100,9 +113,9 @@ void SurfaceThread::process(tbb::concurrent_queue< SurfaceTask >* _queue, RayUnc
       for(size_t iterator = task.begin; iterator < task.end; ++iterator)
       {
         // Set samples to black
-        m_image->samples[_batch[iterator].sampleID].r = 0.f;
-        m_image->samples[_batch[iterator].sampleID].g = 0.f;
-        m_image->samples[_batch[iterator].sampleID].b = 0.f;
+        _image->samples[_batch[iterator].sampleID].r = 0.f;
+        _image->samples[_batch[iterator].sampleID].g = 0.f;
+        _image->samples[_batch[iterator].sampleID].b = 0.f;
       }
     }
   }

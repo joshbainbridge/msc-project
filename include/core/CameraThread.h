@@ -7,10 +7,11 @@
 
 #include <core/Common.h>
 #include <core/Buffer.h>
+#include <core/Image.h>
+#include <core/BatchItem.h>
 #include <core/DirectionalBins.h>
 #include <core/CameraInterface.h>
 #include <core/SamplerInterface.h>
-#include <core/Image.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN
@@ -26,31 +27,30 @@ struct CameraTask
 class CameraThread
 { 
 public:
-  CameraThread(
-    boost::shared_ptr< Buffer > _buffer,
-    boost::shared_ptr< DirectionalBins > _bin,
-    boost::shared_ptr< CameraInterface > _camera,
-    boost::shared_ptr< SamplerInterface > _sampler,
-    boost::shared_ptr< Image > _image
-    )
-    : m_buffer(_buffer)
-    , m_bin(_bin)
-    , m_camera(_camera)
-    , m_sampler(_sampler)
-    , m_image(_image)
-  {;}
+  CameraThread(Buffer _buffer) : m_buffer(_buffer) {;}
 
-  void start(tbb::concurrent_queue< CameraTask >* _queue);
+  void start(
+    DirectionalBins* _bin,
+    CameraInterface* _camera,
+    SamplerInterface* _sampler,
+    Image* _image,
+    tbb::concurrent_queue< CameraTask >* _camera_queue,
+    tbb::concurrent_queue< BatchItem >* _batch_queue
+    );
+
   void join();
-  void process(tbb::concurrent_queue< CameraTask >* _queue);
+  void process(
+    DirectionalBins* _bin,
+    CameraInterface* _camera,
+    SamplerInterface* _sampler,
+    Image* _image,
+    tbb::concurrent_queue< CameraTask >* _camera_queue,
+    tbb::concurrent_queue< BatchItem >* _batch_queue
+    );
 
 private:
   boost::thread m_thread;
-  boost::shared_ptr< Buffer > m_buffer;
-  boost::shared_ptr< DirectionalBins > m_bin;
-  boost::shared_ptr< CameraInterface > m_camera;
-  boost::shared_ptr< SamplerInterface > m_sampler;
-  boost::shared_ptr< Image > m_image;
+  Buffer m_buffer;
 
   RandomGenerator m_random;
 };
