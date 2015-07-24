@@ -18,10 +18,10 @@ camera:
   rotation: [ 0, -0.05, -1 ]
   focal length: 180
   focal distance: 990
-  aperture: 5.6
+  aperture: 8
 
 filter:
-  type: Box
+  type: Tent
 
 sampler:
   type: Stratified

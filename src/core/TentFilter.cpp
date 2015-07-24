@@ -12,6 +12,8 @@ void TentFilter::convolve(const size_t _width, const size_t _height, const size_
       float center_pos_x = iterator_pixel_x + 0.5f;
       float center_pos_y = iterator_pixel_y + 0.5f;
 
+      float denominator = 0;
+
       for(int iterator_mask_x = -1; iterator_mask_x < 2; ++iterator_mask_x)
       {
         for(int iterator_mask_y = -1; iterator_mask_y < 2; ++iterator_mask_y)
@@ -32,6 +34,8 @@ void TentFilter::convolve(const size_t _width, const size_t _height, const size_
 
               float multiplier = distance_x * distance_y;
 
+              denominator = denominator + multiplier;
+
               summation[0] += _input[sample_index].r * multiplier;
               summation[1] += _input[sample_index].g * multiplier;
               summation[2] += _input[sample_index].b * multiplier;
@@ -41,9 +45,9 @@ void TentFilter::convolve(const size_t _width, const size_t _height, const size_
       }
 
       size_t pixel_index = iterator_pixel_y * _width + iterator_pixel_x;
-      _output[pixel_index].r += (summation[0] / _samples);
-      _output[pixel_index].g += (summation[1] / _samples);
-      _output[pixel_index].b += (summation[2] / _samples);
+      _output[pixel_index].r += (summation[0] / denominator);
+      _output[pixel_index].g += (summation[1] / denominator);
+      _output[pixel_index].b += (summation[2] / denominator);
     }
   }
 }

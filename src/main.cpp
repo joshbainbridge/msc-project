@@ -14,14 +14,12 @@
 namespace program_options = boost::program_options;
 namespace filesystem = boost::filesystem;
 
-void commands(const int ac, const char *av[], bool* file, filesystem::path* input)
+void commands(const int ac, const char *av[], filesystem::path* input, filesystem::path* output)
 {
-  *file = false;
-
   program_options::options_description visible("options");
   visible.add_options()
     ("help,h", "produce help message")
-    ("file,f", "output as file")
+    ("output,o", program_options::value< filesystem::path >(), "output as file")
   ;
 
   program_options::options_description hidden("hidden options");
@@ -51,8 +49,8 @@ void commands(const int ac, const char *av[], bool* file, filesystem::path* inpu
 
     program_options::notify(vm);
 
-    if(vm.count("file"))
-      *file = true;
+    if(vm.count("output"))
+      *output = vm["output"].as< filesystem::path >();
 
     if(vm.count("input"))
       *input = vm["input"].as< filesystem::path >();
@@ -83,10 +81,10 @@ void commands(const int ac, const char *av[], bool* file, filesystem::path* inpu
 
 int main(int argc, const char *argv[])
 {
-  bool type_file;
   filesystem::path input_file;
+  filesystem::path output_file;
 
-  commands(argc, argv, &type_file, &input_file);
+  commands(argc, argv, &input_file, &output_file);
 
   float* image_pointer;
   int width;
@@ -98,7 +96,7 @@ int main(int argc, const char *argv[])
   // pathtracer process here...
   size_t iteration = pathtracer->process();
 
-  if(!type_file)
+  if(output_file.empty())
   {
     frm::Framebuffer* framebuffer = new frm::Framebuffer();
     framebuffer->init(width, height);
@@ -163,12 +161,11 @@ int main(int argc, const char *argv[])
       image[i] = Imf::Rgba(image_pointer[i * 3 + 0], image_pointer[i * 3 + 1], image_pointer[i * 3 + 2], 1.f);
     }
 
-    std::string output_file = filesystem::basename(input_file).append(".exr");
     Imf::RgbaOutputFile* file = new Imf::RgbaOutputFile(output_file.c_str(), width, height, Imf::WRITE_RGBA);
     file->setFrameBuffer(image, 1, width);
     file->writePixels(height);
 
-    std::cout << "\033[1;31mOutput file named '" << output_file << "' writen to working directory.\033[0m" << std::endl;
+    std::cout << "\033[1;31mOutput file named " << output_file << " written to working directory.\033[0m" << std::endl;
 
     delete[] image;
     delete file;
