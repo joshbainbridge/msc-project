@@ -38,6 +38,7 @@ public:
   int process();
 
 private:
+  // Change these back to scoped pointers
   boost::shared_ptr< DirectionalBins > m_bins;
   boost::shared_ptr< Settings > m_settings;
   boost::shared_ptr< Image > m_image;

@@ -1,12 +1,12 @@
-#ifndef _TENTFILTER_H_
-#define _TENTFILTER_H_
+#ifndef _BOXFILTER_H_
+#define _BOXFILTER_H_
 
 #include <core/Common.h>
 #include <core/FilterInterface.h>
 
 MSC_NAMESPACE_BEGIN
 
-class TentFilter : public FilterInterface
+class BoxFilter : public FilterInterface
 {
 public:
   void convolve(const size_t _width, const size_t _height, const size_t _samples, Sample* _input, Pixel* _output) const;
@@ -16,16 +16,16 @@ MSC_NAMESPACE_END
 
 YAML_NAMESPACE_BEGIN
 
-template<> struct convert<msc::TentFilter>
+template<> struct convert<msc::BoxFilter>
 {
-  static Node encode(const msc::TentFilter& rhs)
+  static Node encode(const msc::BoxFilter& rhs)
   {
     Node node;
-    node["filter"]["type"] = "Tent";
+    node["filter"]["type"] = "Box";
     return node;
   }
 
-  static bool decode(const Node& node, msc::TentFilter& rhs)
+  static bool decode(const Node& node, msc::BoxFilter& rhs)
   {
     if(!node.IsMap() || node.size() != 1)
       return false;

@@ -45,11 +45,11 @@ void CameraThread::process(
 
         for(size_t iterator = 0; iterator < count; ++iterator)
         {
+          rays[iterator].sampleID = (iterator_x * _image->height * count) + (iterator_y * count) + iterator;
+          _image->samples[rays[iterator].sampleID].x = iterator_x + samples[2 * iterator + 0];
+          _image->samples[rays[iterator].sampleID].y = iterator_y + samples[2 * iterator + 1];
           samples[2 * iterator + 0] = (((iterator_x + samples[2 * iterator + 0]) * 2.f - _image->width) / _image->width) * 36.f;
           samples[2 * iterator + 1] = (((iterator_y + samples[2 * iterator + 1]) * 2.f - _image->height) / _image->width) * 36.f;
-          rays[iterator].sampleID = (iterator_x * _image->height * count) + (iterator_y * count) + iterator;
-          _image->samples[rays[iterator].sampleID].x = samples[2 * iterator + 0];
-          _image->samples[rays[iterator].sampleID].y = samples[2 * iterator + 1];
         }
 
         _camera->sample(count, samples, &m_random, rays);

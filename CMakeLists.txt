@@ -14,9 +14,13 @@ SET( CORE_SOURCES
   ${SRC}/core/Pathtracer.cpp
   ${SRC}/core/RandomGenerator.cpp
   ${SRC}/core/DirectionalBins.cpp
-  ${SRC}/core/GeometricCamera.cpp
+  ${SRC}/core/ThinLensCamera.cpp
+  ${SRC}/core/PinHoleCamera.cpp
   ${SRC}/core/TentFilter.cpp
+  ${SRC}/core/BoxFilter.cpp
   ${SRC}/core/StratifiedSampler.cpp
+  ${SRC}/core/IndependentSampler.cpp
+  ${SRC}/core/GridSampler.cpp
   ${SRC}/core/CameraThread.cpp
   ${SRC}/core/SurfaceThread.cpp
   ${SRC}/core/RaySort.cpp
@@ -39,11 +43,15 @@ SET( CORE_HEADERS
   ${INC}/core/Buffer.h
   ${INC}/core/DirectionalBins.h
   ${INC}/core/CameraInterface.h
-  ${INC}/core/GeometricCamera.h
+  ${INC}/core/ThinLensCamera.h
+  ${INC}/core/PinHoleCamera.h
   ${INC}/core/FilterInterface.h
   ${INC}/core/TentFilter.h
+  ${INC}/core/BoxFilter.h
   ${INC}/core/SamplerInterface.h
   ${INC}/core/StratifiedSampler.h
+  ${INC}/core/IndependentSampler.h
+  ${INC}/core/GridSampler.h
   ${INC}/core/CameraThread.h
   ${INC}/core/SurfaceThread.h
   ${INC}/core/RayCompressed.h

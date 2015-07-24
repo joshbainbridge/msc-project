@@ -2,6 +2,7 @@
 #define _FILTERINTERFACE_H_
 
 #include <core/Common.h>
+#include <core/Image.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -10,7 +11,7 @@ class FilterInterface
 public:
   virtual ~FilterInterface() {}
 
-  virtual void virtualFunc(const float value_one, const float value_two) const =0;
+  virtual void convolve(const size_t _width, const size_t _height, const size_t samples, Sample* _input, Pixel* _output) const =0;
 
 protected:
   float m_variable_one;

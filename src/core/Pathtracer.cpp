@@ -6,9 +6,13 @@
 #include <core/Pathtracer.h>
 #include <core/EmbreeWrapper.h>
 #include <core/Buffer.h>
-#include <core/GeometricCamera.h>
+#include <core/ThinLensCamera.h>
+#include <core/PinHoleCamera.h>
 #include <core/TentFilter.h>
+#include <core/BoxFilter.h>
 #include <core/StratifiedSampler.h>
+#include <core/IndependentSampler.h>
+#include <core/GridSampler.h>
 #include <core/PolygonObject.h>
 #include <core/LambertShader.h>
 #include <core/RaySort.h>
@@ -67,17 +71,24 @@ void Pathtracer::construct(const std::string &_filename)
   }
 
   {
-    GeometricCamera* camera = new GeometricCamera();
+    ThinLensCamera* camera = new ThinLensCamera();
 
     m_camera.reset(camera);
 
     if(node_setup["camera"])
     {
-      if(node_setup["camera"]["type"].as< std::string >() == "Geometric")
+      if(node_setup["camera"]["type"].as< std::string >() == "ThinLens")
       {
-        GeometricCamera* geometric_camera = new GeometricCamera();
-        *geometric_camera = node_setup["camera"].as<GeometricCamera>();
-        m_camera.reset(geometric_camera);
+        ThinLensCamera* thinlens_camera = new ThinLensCamera();
+        *thinlens_camera = node_setup["camera"].as<ThinLensCamera>();
+        m_camera.reset(thinlens_camera);
+      }
+
+      if(node_setup["camera"]["type"].as< std::string >() == "PinHole")
+      {
+        PinHoleCamera* pinhole_camera = new PinHoleCamera();
+        *pinhole_camera = node_setup["camera"].as<PinHoleCamera>();
+        m_camera.reset(pinhole_camera);
       }
     }
   }
@@ -95,6 +106,13 @@ void Pathtracer::construct(const std::string &_filename)
         *tent_filter = node_setup["filter"].as<TentFilter>();
         m_filter.reset(tent_filter);
       }
+
+      if(node_setup["filter"]["type"].as< std::string >() == "Box")
+      {
+        BoxFilter* box_filter = new BoxFilter();
+        *box_filter = node_setup["filter"].as<BoxFilter>();
+        m_filter.reset(box_filter);
+      }
     }
   }
 
@@ -110,6 +128,20 @@ void Pathtracer::construct(const std::string &_filename)
         StratifiedSampler* stratified_sampler = new StratifiedSampler();
         *stratified_sampler = node_setup["sampler"].as<StratifiedSampler>();
         m_sampler.reset(stratified_sampler);
+      }
+
+      if(node_setup["sampler"]["type"].as< std::string >() == "Independent")
+      {
+        IndependentSampler* independent_sampler = new IndependentSampler();
+        *independent_sampler = node_setup["sampler"].as<IndependentSampler>();
+        m_sampler.reset(independent_sampler);
+      }
+
+      if(node_setup["sampler"]["type"].as< std::string >() == "Grid")
+      {
+        GridSampler* grid_sampler = new GridSampler();
+        *grid_sampler = node_setup["sampler"].as<GridSampler>();
+        m_sampler.reset(grid_sampler);
       }
     }
   }
@@ -396,29 +428,7 @@ int Pathtracer::process()
   delete[] batch_uncompressed;
   delete[] batch_compressed;
 
-  size_t sample_count = m_image->base * m_image->base;
-  for(size_t iterator_x = 0; iterator_x < m_image->width; ++iterator_x)
-  {
-    for(size_t iterator_y = 0; iterator_y < m_image->height; ++iterator_y)
-    {
-      float total_r = 0.f;
-      float total_g = 0.f;
-      float total_b = 0.f;
-
-      for(size_t iterator = 0; iterator < sample_count; ++iterator)
-      {
-        size_t sample_index = (iterator_x * m_image->height * sample_count) + (iterator_y * sample_count) + (iterator);
-        total_r += m_image->samples[sample_index].r;
-        total_g += m_image->samples[sample_index].g;
-        total_b += m_image->samples[sample_index].b;
-      }
-
-      size_t pixel_index = iterator_y * m_image->width + iterator_x;
-      m_image->pixels[pixel_index].r += (total_r / sample_count);
-      m_image->pixels[pixel_index].g += (total_g / sample_count);
-      m_image->pixels[pixel_index].b += (total_b / sample_count);
-    }
-  }
+  m_filter->convolve(m_image->width, m_image->height, m_image->base * m_image->base, &(m_image->samples[0]), &(m_image->pixels[0]));
 
   m_image->iteration += 1;
   return m_image->iteration;

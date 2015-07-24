@@ -1,8 +1,8 @@
-#include <core/GeometricCamera.h>
+#include <core/ThinLensCamera.h>
 
 MSC_NAMESPACE_BEGIN
 
-void GeometricCamera::sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const
+void ThinLensCamera::sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const
 {
   //Construct nodal position
   Vector3f nodal_point = m_origin + (m_dir * m_focal_length);
@@ -31,7 +31,7 @@ void GeometricCamera::sample(const int _count, float* _positions, RandomGenerato
 }
 
 //Rejection sampling used for creating rays across the lens
-Vector2f GeometricCamera::rejectionSampling(RandomGenerator* _random) const
+Vector2f ThinLensCamera::rejectionSampling(RandomGenerator* _random) const
 {
   Vector2f output;
 
@@ -45,7 +45,7 @@ Vector2f GeometricCamera::rejectionSampling(RandomGenerator* _random) const
   return output;
 }
 
-void GeometricCamera::direction(const Vector3f &_dir)
+void ThinLensCamera::direction(const Vector3f &_dir)
 {
   //Set camera direction and normalize
   m_dir = _dir.normalized();

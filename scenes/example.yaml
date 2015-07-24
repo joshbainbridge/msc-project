@@ -13,7 +13,7 @@ settings:
   bin exponent: 15
 
 camera:
-  type: Geometric
+  type: ThinLens
   translation: [ 0, 150, 1000 ]
   rotation: [ 0, -0.05, -1 ]
   focal length: 180
@@ -21,7 +21,7 @@ camera:
   aperture: 5.6
 
 filter:
-  type: Tent
+  type: Box
 
 sampler:
   type: Stratified
