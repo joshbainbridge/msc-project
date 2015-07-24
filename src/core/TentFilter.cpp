@@ -19,25 +19,23 @@ void TentFilter::convolve(const size_t _width, const size_t _height, const size_
           int pixel_x = iterator_pixel_x + iterator_mask_x;
           int pixel_y = iterator_pixel_y + iterator_mask_y;
           
-          if(pixel_x < 0 || pixel_x > _width - 1)
-            break;
-          if(pixel_y < 0 || pixel_y > _height - 1)
-            break;
-
-          for(size_t iterator_sample = 0; iterator_sample < _samples; ++iterator_sample)
+          if(!(pixel_x < 0) && (pixel_x < _width) && !(pixel_y < 0) && (pixel_y < _height))
           {
-            size_t sample_index = (pixel_x * _height * _samples) + (pixel_y * _samples) + (iterator_sample);
-            
-            float sample_pos_x = _input[sample_index].x;
-            float sample_pos_y = _input[sample_index].y;
-            float distance_x = fmax(0.f, 1.f - fabsf(sample_pos_x - center_pos_x));
-            float distance_y = fmax(0.f, 1.f - fabsf(sample_pos_y - center_pos_y));
+            for(size_t iterator_sample = 0; iterator_sample < _samples; ++iterator_sample)
+            {
+              size_t sample_index = (pixel_x * _height * _samples) + (pixel_y * _samples) + (iterator_sample);
+              
+              float sample_pos_x = _input[sample_index].x;
+              float sample_pos_y = _input[sample_index].y;
+              float distance_x = fmax(0.f, 1.f - fabsf(sample_pos_x - center_pos_x));
+              float distance_y = fmax(0.f, 1.f - fabsf(sample_pos_y - center_pos_y));
 
-            float multiplier = distance_x * distance_y;
+              float multiplier = distance_x * distance_y;
 
-            summation[0] += _input[sample_index].r * multiplier;
-            summation[1] += _input[sample_index].g * multiplier;
-            summation[2] += _input[sample_index].b * multiplier;
+              summation[0] += _input[sample_index].r * multiplier;
+              summation[1] += _input[sample_index].g * multiplier;
+              summation[2] += _input[sample_index].b * multiplier;
+            }
           }
         }
       }
