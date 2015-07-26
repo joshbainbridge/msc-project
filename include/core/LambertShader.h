@@ -12,13 +12,14 @@ class LambertShader : public ShaderInterface
 {
 public:
   void evaluate(
-    const Vector3f _input,
-    const Vector3f _output,
-    const Vector3f _normal,
+    const int _size,
     TextureSystem _texture_system,
-    const float _u,
-    const float _v,
-    Colour3f* _weight
+    const Vector3f* _input,
+    const Vector3f* _output,
+    const Vector3f* _normal,
+    float* _u,
+    float* _v,
+    float* _result
     ) const;
 
   inline Colour3f colour() const {return m_colour;}

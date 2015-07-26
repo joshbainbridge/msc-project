@@ -64,7 +64,6 @@ public:
   type m_array;
 };
 
-
 class Shading
 {
 public:
@@ -100,6 +99,7 @@ private:
 
   mutable Buffer m_buffer;
 };
+
 MSC_NAMESPACE_END
 
 #endif

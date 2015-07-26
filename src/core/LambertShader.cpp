@@ -1,23 +1,41 @@
 #include <core/LambertShader.h>
+#include <vector>
 
 MSC_NAMESPACE_BEGIN
 
 void LambertShader::evaluate(
-  const Vector3f _input,
-  const Vector3f _output,
-  const Vector3f _normal,
+  const int _size,
   TextureSystem _texture_system,
-  const float _u,
-  const float _v,
-  Colour3f* _weight
+  const Vector3f* _input,
+  const Vector3f* _output,
+  const Vector3f* _normal,
+  float* _u,
+  float* _v,
+  float* _result
   ) const
 {
-  float result[3] = {1.f, 1.f, 1.f};
-  OpenImageIO::TextureOpt options;
+  OpenImageIO::TextureOptions options;
+  std::vector< OpenImageIO::Runflag > runflags(_size, 1);
+  std::vector< float > pattern(_size * 3);
+  
+  float nullvalue = 0;
+  _texture_system->texture(
+    m_texture,
+    options,
+    &(runflags[0]),
+    0, _size,
+    OpenImageIO::Varying(_u), OpenImageIO::Varying(_v),
+    OpenImageIO::Uniform(nullvalue), OpenImageIO::Uniform(nullvalue),
+    OpenImageIO::Uniform(nullvalue), OpenImageIO::Uniform(nullvalue),
+    3, &(pattern[0])
+    );
 
-  _texture_system->texture(m_texture, options, _u, _v, 0, 0, 0, 0, 3, result);
-
-  *_weight = m_colour * Colour3f(result[0], result[1], result[2]);
+  for(size_t i = 0; i < _size; ++i)
+  {
+    _result[3 * i + 0] = m_colour[0] * pattern[3 * i + 0];
+    _result[3 * i + 1] = m_colour[1] * pattern[3 * i + 1];
+    _result[3 * i + 2] = m_colour[2] * pattern[3 * i + 2];
+  }
 }
 
 MSC_NAMESPACE_END

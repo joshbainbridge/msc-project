@@ -151,7 +151,7 @@ void Pathtracer::construct(const std::string &_filename)
   }
 
   m_scene.reset(new Scene);
-  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_COHERENT, RTC_INTERSECT1);
+  m_scene->rtc_scene = rtcNewScene(RTC_SCENE_STATIC | RTC_SCENE_COHERENT, RTC_INTERSECT1);
   
   for(YAML::const_iterator scene_iterator = node_scene.begin(); scene_iterator != node_scene.end(); ++scene_iterator)
   {
@@ -235,6 +235,17 @@ void Pathtracer::cameraSampling()
     );
 }
 
+bool Pathtracer::batchLoading(BatchItem* batch_info)
+{
+  if(!m_batch_queue.try_pop(*batch_info))
+  {
+    m_bins->flush(&m_batch_queue);
+    return m_batch_queue.try_pop(*batch_info);
+  }
+
+  return true;
+}
+
 void Pathtracer::fileLoading(const BatchItem& batch_info, RayCompressed* batch_compressed)
 {
   // Load batch from file
@@ -277,6 +288,15 @@ void Pathtracer::surfaceShading(const BatchItem& batch_info, RayUncompressed* ba
     RangeGeom< RayUncompressed* >(0, batch_info.size, batch_uncompressed),
     Shading(m_scene.get(), m_image.get(), m_bins.get(), &m_batch_queue, &m_thread_texture_system, &m_thread_random_generator, batch_uncompressed),
     tbb::simple_partitioner()
+    );
+}
+
+void Pathtracer::imageConvolution()
+{
+  // Convolve iamge using filter interface
+  tbb::parallel_for(
+    tbb::blocked_range2d< size_t >(0, m_image->width, 64, 0, m_image->height, 64),
+    Convolve(m_filter.get(), m_image.get())
     );
 }
 
@@ -323,6 +343,8 @@ void Pathtracer::clear()
 
 int Pathtracer::process()
 {
+  tbb::task_scheduler_init init(1);
+
   m_bins.reset(new DirectionalBins(m_settings->bin_exponent));
 
   size_t bin_size = pow(2, m_settings->bin_exponent);
@@ -331,54 +353,48 @@ int Pathtracer::process()
 
   cameraSampling();
 
-  m_bins->flush(&m_batch_queue);
-
   std::cout << "\033[1;32mCurrent queue holds " << m_batch_queue.unsafe_size() << " batches.\033[0m" << std::endl;
 
-  BatchItem batch_info;
-  bool batch_found = m_batch_queue.try_pop(batch_info);
+  BatchItem pre_batch_info;
+  bool pre_batch_found = batchLoading(&pre_batch_info);
 
   BatchItem post_batch_info;
-  bool post_batch_found = m_batch_queue.try_pop(post_batch_info);
+  bool post_batch_found = batchLoading(&post_batch_info);
 
-  if(batch_found)
-    fileLoading(batch_info, batch_compressed);
+  if(pre_batch_found)
+    fileLoading(pre_batch_info, batch_compressed);
 
   boost::thread loading_thread;
-  while(batch_found)
+
+  while(pre_batch_found)
   {
-    rayDecompressing(batch_info, batch_compressed, batch_uncompressed);
+    rayDecompressing(pre_batch_info, batch_compressed, batch_uncompressed);
 
     if(post_batch_found)
       loading_thread = boost::thread(&Pathtracer::fileLoading, this, post_batch_info, batch_compressed);
 
-    raySorting(batch_info, batch_uncompressed);
+    raySorting(pre_batch_info, batch_uncompressed);
 
-    sceneTraversal(batch_info, batch_uncompressed);
+    sceneTraversal(pre_batch_info, batch_uncompressed);
 
-    hitPointSorting(batch_info, batch_uncompressed);
+    hitPointSorting(pre_batch_info, batch_uncompressed);
 
-    surfaceShading(batch_info, batch_uncompressed);
+    surfaceShading(pre_batch_info, batch_uncompressed);
 
     if(post_batch_found)
       loading_thread.join();
 
-    m_bins->flush(&m_batch_queue);
+    boost::filesystem::remove(pre_batch_info.filename);
 
-    boost::filesystem::remove(batch_info.filename);
-
-    std::swap(batch_found, post_batch_found);
-    std::swap(batch_info, post_batch_info);
-    post_batch_found = m_batch_queue.try_pop(post_batch_info);
+    std::swap(pre_batch_found, post_batch_found);
+    std::swap(pre_batch_info, post_batch_info);
+    post_batch_found = batchLoading(&post_batch_info);
   }
 
   delete[] batch_uncompressed;
   delete[] batch_compressed;
 
-  tbb::parallel_for(
-    tbb::blocked_range2d< size_t >(0, m_image->width, 64, 0, m_image->height, 64),
-    Convolve(m_filter.get(), m_image.get())
-    );
+  imageConvolution();
 
   m_image->iteration += 1;
   return m_image->iteration;
