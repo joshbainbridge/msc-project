@@ -21,8 +21,8 @@ SET( CORE_SOURCES
   ${SRC}/core/StratifiedSampler.cpp
   ${SRC}/core/IndependentSampler.cpp
   ${SRC}/core/GridSampler.cpp
-  ${SRC}/core/CameraThread.cpp
-  ${SRC}/core/SurfaceThread.cpp
+  ${SRC}/core/Camera.cpp
+  ${SRC}/core/Shading.cpp
   ${SRC}/core/RaySort.cpp
   ${SRC}/core/RayIntersect.cpp
   ${SRC}/core/RayDecompress.cpp
@@ -36,6 +36,7 @@ SET( CORE_HEADERS
   ${INC}/core/Constants.h
   ${INC}/core/Common.h
   ${INC}/core/EmbreeWrapper.h
+  ${INC}/core/OpenImageWrapper.h
   ${INC}/core/Settings.h
   ${INC}/core/Image.h
   ${INC}/core/Scene.h
@@ -52,8 +53,8 @@ SET( CORE_HEADERS
   ${INC}/core/StratifiedSampler.h
   ${INC}/core/IndependentSampler.h
   ${INC}/core/GridSampler.h
-  ${INC}/core/CameraThread.h
-  ${INC}/core/SurfaceThread.h
+  ${INC}/core/Camera.h
+  ${INC}/core/Shading.h
   ${INC}/core/RayCompressed.h
   ${INC}/core/RayUncompressed.h
   ${INC}/core/RaySort.h

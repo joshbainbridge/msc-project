@@ -3,7 +3,7 @@
 image:
   width: 700
   height: 500
-  sample base: 1
+  sample base: 2
 
 settings:
   ray depth: 3

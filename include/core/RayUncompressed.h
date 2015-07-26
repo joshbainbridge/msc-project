@@ -43,6 +43,47 @@ struct RayUncompressed
   int sampleID;
 };
 
+inline bool operator==(const RayUncompressed &lhs, const RayUncompressed &rhs)
+{return (lhs.geomID == rhs.geomID);}
+inline bool operator!=(const RayUncompressed &lhs, const RayUncompressed &rhs)
+{return (lhs.geomID != rhs.geomID);}
+
+struct CompareHit
+{
+  bool operator()(const RayUncompressed &lhs, const RayUncompressed &rhs) const
+  {
+    return (lhs.geomID < rhs.geomID) || (lhs.geomID == rhs.geomID && lhs.primID < rhs.primID);
+  }
+};
+
+class CompareOrg
+{
+public:
+  CompareOrg(int _axis = 0) : m_axis(_axis) {;}
+
+  bool operator()(const RayUncompressed &lhs, const RayUncompressed &rhs) const
+  {
+    return lhs.org[m_axis] < rhs.org[m_axis];
+  }
+
+private:
+  size_t m_axis;
+};
+
+class CompareDir
+{
+public:
+  CompareDir(int _axis = 0) : m_axis(_axis) {;}
+
+  bool operator()(const RayUncompressed &lhs, const RayUncompressed &rhs) const
+  {
+    return lhs.dir[m_axis] < rhs.dir[m_axis];
+  }
+
+private:
+  size_t m_axis;
+};
+
 MSC_NAMESPACE_END
 
 #endif

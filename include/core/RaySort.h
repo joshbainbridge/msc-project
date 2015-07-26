@@ -8,7 +8,7 @@
 
 MSC_NAMESPACE_BEGIN
 
-class RaySort : public tbb::task
+class RaySort
 {
 public:
   RaySort(
@@ -23,7 +23,7 @@ public:
    , m_output(_output)
   {;}
 
-  tbb::task* execute();
+  void operator()() const;
 
 private:
   size_t m_begin;

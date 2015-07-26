@@ -2,7 +2,7 @@
 #define _SHADERINTERFACE_H_
 
 #include <core/Common.h>
-#include <OpenImageIO/texture.h>
+#include <core/OpenImageWrapper.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -15,7 +15,7 @@ public:
     const Vector3f _input,
     const Vector3f _output,
     const Vector3f _normal,
-    OpenImageIO::TextureSystem* _texture_system,
+    TextureSystem _texture_system,
     const float _u,
     const float _v,
     Colour3f* _weight

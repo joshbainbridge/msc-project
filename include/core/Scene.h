@@ -1,7 +1,6 @@
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
-#include <string>
 #include <vector>
 #include <map>
 

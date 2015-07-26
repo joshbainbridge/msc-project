@@ -38,7 +38,9 @@ void DirectionalBins::add(const int _size, const int _cardinal, RayCompressed* _
 {
   m_bin[_cardinal].mutex.lock();
 
-  if(m_bin[_cardinal].pointer == m_bin[_cardinal].end)
+  size_t file_size = pow(2, m_exponent);
+
+  if(m_bin[_cardinal].size + _size > file_size)
   {
     m_bin[_cardinal].outfile.close();
 
@@ -52,8 +54,6 @@ void DirectionalBins::add(const int _size, const int _cardinal, RayCompressed* _
     std::string file_location = boost::filesystem::temp_directory_path().string();
     std::string file_name = boost::filesystem::unique_path().string();
     m_bin[_cardinal].path = file_location + file_name;
-
-    size_t file_size = pow(2, m_exponent);
 
     boost::iostreams::mapped_file_params params;
     params.path = m_bin[_cardinal].path;
@@ -77,12 +77,14 @@ void DirectionalBins::flush(tbb::concurrent_queue< BatchItem >* _batch_queue)
   {
     m_bin[iterator].outfile.close();
     
-    if(m_bin[iterator].size != 0)
+    if(m_bin[iterator].size > 0)
     {
       BatchItem batch;
       batch.filename = m_bin[iterator].path;
       batch.size = m_bin[iterator].size;
       _batch_queue->push(batch);
+      
+      m_bin[iterator].size = 0;
     }
   }
 }

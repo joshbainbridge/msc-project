@@ -1,36 +1,10 @@
+#include <tbb/tbb.h>
+
 #include <core/RaySort.h>
 
 MSC_NAMESPACE_BEGIN
 
-class CompareOrg
-{
-public:
-  CompareOrg(int _axis = 0) : m_axis(_axis) {;}
-
-  bool operator()(RayUncompressed const &lhs, RayUncompressed const &rhs)
-  {
-    return lhs.org[m_axis] < rhs.org[m_axis];
-  }
-
-private:
-  size_t m_axis;
-};
-
-class CompareDir
-{
-public:
-  CompareDir(int _axis = 0) : m_axis(_axis) {;}
-
-  bool operator()(RayUncompressed const &lhs, RayUncompressed const &rhs)
-  {
-    return lhs.dir[m_axis] < rhs.dir[m_axis];
-  }
-
-private:
-  size_t m_axis;
-};
-
-tbb::task* RaySort::execute()
+void RaySort::operator()() const
 {
   size_t size = (m_end - m_begin);
 
@@ -112,14 +86,10 @@ tbb::task* RaySort::execute()
       }
     }
 
-    RaySort &lrange = *new( tbb::task::allocate_child() ) RaySort(m_begin, middle, llimits, m_output);
-    RaySort &rrange = *new( tbb::task::allocate_child() ) RaySort(middle, m_end, rlimits, m_output);
+    RaySort lrange = RaySort(m_begin, middle, llimits, m_output);
+    RaySort rrange = RaySort(middle, m_end, rlimits, m_output);
 
-    tbb::task::set_ref_count(3);
-
-    tbb::task::spawn(lrange);
-    tbb::task::spawn(rrange);
-    tbb::task::wait_for_all();
+    tbb::parallel_invoke(lrange, rrange);
   }
   else if(size > 64)
   {
@@ -140,17 +110,11 @@ tbb::task* RaySort::execute()
     rlimits = m_limits;
     llimits.min[axis] = m_output[middle].dir[axis];
 
-    RaySort &lrange = *new( tbb::task::allocate_child() ) RaySort(m_begin, middle, llimits, m_output);
-    RaySort &rrange = *new( tbb::task::allocate_child() ) RaySort(middle, m_end, rlimits, m_output);
+    RaySort lrange = RaySort(m_begin, middle, llimits, m_output);
+    RaySort rrange = RaySort(middle, m_end, rlimits, m_output);
 
-    tbb::task::set_ref_count(3);
-
-    tbb::task::spawn(lrange);
-    tbb::task::spawn(rrange);
-    tbb::task::wait_for_all();
+    tbb::parallel_invoke(lrange, rrange);
   }
-
-  return NULL;
 }
 
 MSC_NAMESPACE_END
