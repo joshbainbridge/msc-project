@@ -13,7 +13,7 @@ void RaySort::operator()() const
     int temp = ((m_limits.max[0] - m_limits.min[0]) < (m_limits.max[1] - m_limits.min[1])) ? 1 : 0;
     int axis = (temp < (m_limits.max[2] - m_limits.min[2])) ? 2 : temp;
 
-    std::sort(&m_output[m_begin], &m_output[m_end], CompareOrg(axis));
+    tbb::parallel_sort(&m_output[m_begin], &m_output[m_end], CompareOrg(axis));
 
     size_t middle = m_begin + (size / 2);
     size_t lsize = (middle - m_begin);
@@ -96,7 +96,7 @@ void RaySort::operator()() const
     int temp = ((m_limits.max[0] - m_limits.min[0]) < (m_limits.max[1] - m_limits.min[1])) ? 1 : 0;
     int axis = (temp < (m_limits.max[2] - m_limits.min[2])) ? 2 : temp;
 
-    std::sort(&m_output[m_begin], &m_output[m_end], CompareDir(axis));
+    tbb::parallel_sort(&m_output[m_begin], &m_output[m_end], CompareDir(axis));
 
     size_t middle = m_begin + (size / 2);
     size_t lsize = (middle - m_begin);

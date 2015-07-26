@@ -2,11 +2,21 @@
 
 MSC_NAMESPACE_BEGIN
 
-void TentFilter::convolve(const size_t _width, const size_t _height, const size_t _samples, Sample* _input, Pixel* _output) const
+void TentFilter::convolve(
+  const size_t _width,
+  const size_t _height,
+  const size_t _samples,
+  const size_t _rows_begin,
+  const size_t _rows_end,
+  const size_t _cols_begin,
+  const size_t _cols_end,
+  Sample* _input,
+  Pixel* _output
+  ) const
 { 
-  for(int iterator_pixel_x = 0; iterator_pixel_x < _width; ++iterator_pixel_x)
+  for(int iterator_pixel_x = _rows_begin; iterator_pixel_x < _rows_end; ++iterator_pixel_x)
   {
-    for(int iterator_pixel_y = 0; iterator_pixel_y < _height; ++iterator_pixel_y)
+    for(int iterator_pixel_y = _cols_begin; iterator_pixel_y < _cols_end; ++iterator_pixel_y)
     {
       Colour3f summation(0.f, 0.f, 0.f);
       float center_pos_x = iterator_pixel_x + 0.5f;

@@ -29,6 +29,7 @@ SET( CORE_SOURCES
   ${SRC}/core/RayBoundingbox.cpp
   ${SRC}/core/LambertShader.cpp
   ${SRC}/core/NullShader.cpp
+  ${SRC}/core/Convolve.cpp
   )
 
 SET( CORE_HEADERS
@@ -66,6 +67,7 @@ SET( CORE_HEADERS
   ${INC}/core/NullShader.h
   ${INC}/core/LambertShader.h
   ${INC}/core/BatchItem.h
+  ${INC}/core/Convolve.h
   )
 
 SET( FRM_SOURCES

@@ -2,11 +2,21 @@
 
 MSC_NAMESPACE_BEGIN
 
-void BoxFilter::convolve(const size_t _width, const size_t _height, const size_t _samples, Sample* _input, Pixel* _output) const
+void BoxFilter::convolve(
+  const size_t _width,
+  const size_t _height,
+  const size_t _samples,
+  const size_t _rows_begin,
+  const size_t _rows_end,
+  const size_t _cols_begin,
+  const size_t _cols_end,
+  Sample* _input,
+  Pixel* _output
+  ) const
 { 
-  for(size_t iterator_x = 0; iterator_x < _width; ++iterator_x)
+  for(size_t iterator_x = _rows_begin; iterator_x < _rows_end; ++iterator_x)
   {
-    for(size_t iterator_y = 0; iterator_y < _height; ++iterator_y)
+    for(size_t iterator_y = _cols_begin; iterator_y < _cols_end; ++iterator_y)
     {
       Colour3f summation(0.f, 0.f, 0.f);
 

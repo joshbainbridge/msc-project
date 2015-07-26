@@ -9,7 +9,17 @@ MSC_NAMESPACE_BEGIN
 class TentFilter : public FilterInterface
 {
 public:
-  void convolve(const size_t _width, const size_t _height, const size_t _samples, Sample* _input, Pixel* _output) const;
+  void convolve(
+    const size_t _width,
+    const size_t _height,
+    const size_t _samples,
+    const size_t _rows_begin,
+    const size_t _rows_end,
+    const size_t _cols_begin,
+    const size_t _cols_end,
+    Sample* _input,
+    Pixel* _output
+    ) const;
 };
 
 MSC_NAMESPACE_END

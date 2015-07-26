@@ -3,7 +3,7 @@
 image:
   width: 700
   height: 500
-  sample base: 2
+  sample base: 1
 
 settings:
   ray depth: 3
@@ -21,7 +21,7 @@ camera:
   aperture: 8
 
 filter:
-  type: Tent
+  type: Box
 
 sampler:
   type: Stratified

@@ -10,8 +10,8 @@ MSC_NAMESPACE_BEGIN
 
 struct Buffer
 {
-  size_t size;
-  size_t index[6];
+  // size_t size;
+  // size_t index[6];
   std::vector< RayCompressed > direction[6];
 };
 
