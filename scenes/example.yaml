@@ -1,8 +1,8 @@
 --- # Setup
 
 image:
-  width: 700
-  height: 500
+  width: 1024
+  height: 429
   sample base: 1
 
 settings:
@@ -14,9 +14,9 @@ settings:
 
 camera:
   type: ThinLens
-  translation: [ 0, 150, 1000 ]
-  rotation: [ 0, -0.05, -1 ]
-  focal length: 180
+  translation: [ 0, 120, 1000 ]
+  rotation: [ 0, 90, -3 ]
+  focal length: 150
   focal distance: 990
   aperture: 8
 
@@ -31,7 +31,7 @@ sampler:
 object:
   type: Polygon
   filename: scenes/objects/dragon.obj
-  translation: [ 0, 0, 0 ]
+  translation: [ 15, 0, 25 ]
   rotation: [ 0, 45, 0 ]
   scale: [ 10, 10, 10 ]
   shader: 0
@@ -39,7 +39,7 @@ object:
 object:
   type: Polygon
   filename: scenes/objects/backdrop_data.obj
-  translation: [ 0, 0, 0 ]
+  translation: [ -15, 0, 0 ]
   rotation: [ 0, 0, 0 ]
   scale: [ 10, 10, 10 ]
   shader: 1

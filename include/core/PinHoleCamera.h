@@ -10,30 +10,24 @@ class PinHoleCamera : public CameraInterface
 {
 public:
   PinHoleCamera()
-    : m_origin(Vector3f(0.f, 0.f, 0.f))
-    , m_dir(Vector3f(1.f, 0.f, 0.f))
-    , m_up(Vector3f(0.f, 1.f, 0.f))
-    , m_right(Vector3f(0.f, 0.f, 1.f))
+    : m_translation(Vector3f(0.f, 0.f, 0.f))
+    , m_rotation(Vector3f(0.f, 0.f, 0.f))
     , m_focal_length(55.f)
   {;}
 
-  inline Vector3f direction() const {return m_dir;}
-  inline Vector3f origin() const {return m_origin;}
-  inline Vector3f up() const {return m_up;}
-  inline Vector3f right() const {return m_right;}
+  inline Vector3f translation() const {return m_translation;}
+  inline Vector3f rotation() const {return m_rotation;}
   inline float focalLength() const {return m_focal_length;}
 
-  void direction(const Vector3f &_dir);
-  void origin(const Vector3f &_origin){m_origin = _origin;}
+  void translation(const Vector3f &_translation){m_translation = _translation;}
+  void rotation(const Vector3f &_rotation){m_rotation = _rotation;}
   void focalLength(const float _focal_length){m_focal_length = _focal_length;}
 
   void sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const;
 
 private:
-  Vector3f m_origin;
-  Vector3f m_dir;
-  Vector3f m_up;
-  Vector3f m_right;
+  Vector3f m_translation;
+  Vector3f m_rotation;
   float m_focal_length;
 };
 
@@ -47,8 +41,8 @@ template<> struct convert<msc::PinHoleCamera>
   {
     Node node;
     node["camera"]["type"] = "PinHole";
-    node["camera"]["translation"] = rhs.origin();
-    node["camera"]["rotation"] = rhs.direction();
+    node["camera"]["translation"] = rhs.translation();
+    node["camera"]["rotation"] = rhs.rotation();
     node["camera"]["focal length"] = rhs.focalLength();
     return node;
   }
@@ -58,8 +52,8 @@ template<> struct convert<msc::PinHoleCamera>
     if(!node.IsMap() || node.size() != 4)
       return false;
 
-    rhs.origin(node["translation"].as<msc::Vector3f>());
-    rhs.direction(node["rotation"].as<msc::Vector3f>());
+    rhs.translation(node["translation"].as<msc::Vector3f>());
+    rhs.rotation(node["rotation"].as<msc::Vector3f>());
     rhs.focalLength(node["focal length"].as<float>());
     return true;
   }

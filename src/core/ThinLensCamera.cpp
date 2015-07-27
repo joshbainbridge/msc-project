@@ -4,55 +4,53 @@ MSC_NAMESPACE_BEGIN
 
 void ThinLensCamera::sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const
 {
-  //Construct nodal position
-  Vector3f nodal_point = m_origin + (m_dir * m_focal_length);
+  Affine3f rotate_transform = Affine3f::Identity()
+   * Eigen::AngleAxisf(m_rotation.y() * M_PI_180, Vector3f::UnitY())
+   * Eigen::AngleAxisf(m_rotation.x() * M_PI_180, Vector3f::UnitX())
+   * Eigen::AngleAxisf(m_rotation.z() * M_PI_180, Vector3f::UnitZ());
+
+  Vector3f forward = rotate_transform * Vector3f::UnitX();
+  Vector3f up = rotate_transform * Vector3f::UnitY();
+  Vector3f right = rotate_transform * Vector3f::UnitZ();
+
+  Vector3f nodal_point = m_translation + (forward * m_focal_length);
   float nodal_focal_ratio = m_focal_distance / m_focal_length;
 
+  msc::Vector3fMap mapped_position(NULL);
+  msc::Vector3fMap mapped_direction(NULL);
   for(size_t iterator = 0; iterator < _count; ++iterator)
   {
-    //Find position on film plane
-    Vector3f film_position = m_origin + (m_right * _positions[2 * iterator + 0]) + (m_up * _positions[2 * iterator + 1]);
+    new (&mapped_position) msc::Vector3fMap((float*) &(_ouput[iterator].org));
+    new (&mapped_direction) msc::Vector3fMap((float*) &(_ouput[iterator].dir));
 
-    //Find ray intersection on focal plane
+    Vector3f film_position = m_translation + (right * _positions[2 * iterator + 0]) + (up * _positions[2 * iterator + 1]);
     Vector3f focal_point = film_position + (nodal_point - film_position) * nodal_focal_ratio;
 
-    //Get sample position on lens
     Vector2f aperture_sample = rejectionSampling(_random) * (m_focal_length / m_aperture);
-    Vector3f aperture_position = (m_right * aperture_sample.x()) + (m_up * aperture_sample.y());
+    Vector3f aperture_position = (right * aperture_sample.x()) + (up * aperture_sample.y());
 
-    //Given x and y position between -1 and 1 generate ray postioned on camera plane and calculate direction
-    Vector3f position = nodal_point + aperture_position;
-    Vector3f direction = (focal_point - position).normalized();
-
-    //Update data
-    std::copy(position.data(), position.data() + 3, _ouput[iterator].org);
-    std::copy(direction.data(), direction.data() + 3, _ouput[iterator].dir);
+    mapped_position = nodal_point + aperture_position;
+    mapped_direction = (focal_point - mapped_position).normalized();
   }
 }
 
-//Rejection sampling used for creating rays across the lens
 Vector2f ThinLensCamera::rejectionSampling(RandomGenerator* _random) const
 {
+  float x;
+  float y;
   Vector2f output;
 
   while(true)
   {
-    output = Vector2f(_random->getSample() - 0.5f, _random->getSample() - 0.5f);
+    x = _random->getSample() - 0.5f;
+    y = _random->getSample() - 0.5f;
+    output = Vector2f(x, y);
+
     if(output.norm() < 0.5f)
       break;
   }
 
   return output;
-}
-
-void ThinLensCamera::direction(const Vector3f &_dir)
-{
-  //Set camera direction and normalize
-  m_dir = _dir.normalized();
-
-  //Recalculate right and up vectors
-  m_right = Vector3f(0.f, 1.f, 0.f).cross(m_dir).normalized();
-  m_up = m_dir.cross(m_right).normalized();
 }
 
 MSC_NAMESPACE_END

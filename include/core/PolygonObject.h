@@ -64,12 +64,12 @@ template<> struct convert<msc::PolygonObject>
     rhs.texcoords.swap(shape.mesh.texcoords);
     rhs.indices.swap(shape.mesh.indices);
 
-    msc::Affine3f transform(msc::Affine3f::Identity());
-    transform *= Eigen::Translation3f(rhs.translation);
-    transform *= Eigen::AngleAxisf(rhs.rotation.x() * M_PI_180, msc::Vector3f(1, 0, 0));
-    transform *= Eigen::AngleAxisf(rhs.rotation.y() * M_PI_180, msc::Vector3f(0, 1, 0));
-    transform *= Eigen::AngleAxisf(rhs.rotation.z() * M_PI_180, msc::Vector3f(0, 0, 1));
-    transform *= Eigen::AlignedScaling3f(rhs.scale);
+    msc::Affine3f transform = msc::Affine3f::Identity()
+     * Eigen::Translation3f(rhs.translation)
+     * Eigen::AngleAxisf(rhs.rotation.x() * M_PI_180, msc::Vector3f::UnitX())
+     * Eigen::AngleAxisf(rhs.rotation.y() * M_PI_180, msc::Vector3f::UnitY())
+     * Eigen::AngleAxisf(rhs.rotation.z() * M_PI_180, msc::Vector3f::UnitZ())
+     * Eigen::AlignedScaling3f(rhs.scale);
 
     msc::Vector3fMap mapped_data(NULL);
     rhs.positions.resize((shape.mesh.positions.size() / 3) * 4);
