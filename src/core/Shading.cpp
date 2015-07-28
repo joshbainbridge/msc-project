@@ -1,9 +1,11 @@
 #include <map>
 #include <vector>
+#include <iostream>
 
 #include <core/Shading.h>
 #include <core/PolygonObject.h>
 #include <core/ShaderInterface.h>
+#include <core/LightInterface.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -35,6 +37,7 @@ void Shading::operator()(const RangeGeom< RayUncompressed* > &r) const
     if(light_id == -1)
     {
       ShaderInterface* shader = m_scene->shaders[object->shader].get();
+      LightInterface* light = m_scene->lights[0].get();
 
       size_t range = r.end() - r.begin();
 
@@ -44,6 +47,8 @@ void Shading::operator()(const RangeGeom< RayUncompressed* > &r) const
       Vector3f* input = new Vector3f[range];
       Vector3f* output = new Vector3f[range];
       Vector3f* normal = new Vector3f[range];
+      Vector3f* position = new Vector3f[range];
+      Colour3f* radiance = new Colour3f[range];
 
       //Pre loop through the group
       for(size_t iterator = r.begin(); iterator < r.end(); ++iterator)
@@ -67,7 +72,28 @@ void Shading::operator()(const RangeGeom< RayUncompressed* > &r) const
         v[index] = (1.f - s - t) * object->texcoords[2 * vertex01 + 1] + 
         s * object->texcoords[2 * vertex02 + 1] + 
         t * object->texcoords[2 * vertex03 + 1];
+
+        normal[index][0] = (1.f - s - t) * object->normals[3 * vertex01 + 0] + 
+        s * object->normals[3 * vertex02 + 0] + 
+        t * object->normals[3 * vertex03 + 0];
+
+        normal[index][1] = (1.f - s - t) * object->normals[3 * vertex01 + 1] + 
+        s * object->normals[3 * vertex02 + 1] + 
+        t * object->normals[3 * vertex03 + 1];
+
+        normal[index][2] = (1.f - s - t) * object->normals[3 * vertex01 + 2] + 
+        s * object->normals[3 * vertex02 + 2] + 
+        t * object->normals[3 * vertex03 + 2];
+
+        Vector3f origin = Vector3f(m_batch[iterator].org[0], m_batch[iterator].org[1], m_batch[iterator].org[2]);
+        Vector3f direction = Vector3f(m_batch[iterator].dir[0], m_batch[iterator].dir[1], m_batch[iterator].dir[2]).normalized();
+
+        position[index] = origin + direction * (m_batch[iterator].tfar - M_EPSILON);
+        output[index] = direction * -1.f;
       }
+
+      // Evaluate light
+      light->sample(range, &random, position, input, radiance);
 
       // Evaluate shader
       shader->evaluate(range, texture_system, input, output, normal, u, v, result);
@@ -75,10 +101,12 @@ void Shading::operator()(const RangeGeom< RayUncompressed* > &r) const
       //Post loop through the group
       for(size_t iterator = r.begin(); iterator < r.end(); ++iterator)
       {
+        size_t index = iterator - r.begin();
+
         // Add shader colour to samples
-        m_image->samples[m_batch[iterator].sampleID].r = result[3 * (iterator - r.begin()) + 0];
-        m_image->samples[m_batch[iterator].sampleID].g = result[3 * (iterator - r.begin()) + 1];
-        m_image->samples[m_batch[iterator].sampleID].b = result[3 * (iterator - r.begin()) + 2];
+        m_image->samples[m_batch[iterator].sampleID].r = result[3 * index + 0] * radiance[index][0];
+        m_image->samples[m_batch[iterator].sampleID].g = result[3 * index + 1] * radiance[index][1];
+        m_image->samples[m_batch[iterator].sampleID].b = result[3 * index + 2] * radiance[index][2];
       }
 
       delete[] result;
@@ -87,6 +115,8 @@ void Shading::operator()(const RangeGeom< RayUncompressed* > &r) const
       delete[] input;
       delete[] output;
       delete[] normal;
+      delete[] position;
+      delete[] radiance;
     }
     // If object is a light
     else

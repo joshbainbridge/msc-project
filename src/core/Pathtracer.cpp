@@ -16,6 +16,7 @@
 #include <core/GridSampler.h>
 #include <core/PolygonObject.h>
 #include <core/LambertShader.h>
+#include <core/QuadLight.h>
 #include <core/RaySort.h>
 #include <core/RayIntersect.h>
 #include <core/RayDecompress.h>
@@ -215,9 +216,10 @@ void Pathtracer::construct(const std::string &_filename)
     {
       if(second["type"].as< std::string >() == "Quad")
       {
-        // PolygonObject* polygon_object = new PolygonObject();
-        // *polygon_object = second.as<PolygonObject>();
-        // m_scene.add(polygon_object);
+        boost::shared_ptr< QuadLight > quad_light(new QuadLight);
+        *quad_light = second.as<QuadLight>();
+
+        m_scene->lights.push_back(quad_light);
       }
     }
   }
@@ -237,6 +239,7 @@ void Pathtracer::cameraSampling()
 
 bool Pathtracer::batchLoading(BatchItem* batch_info)
 {
+  // Query and load from batch queue 
   if(!m_batch_queue.try_pop(*batch_info))
   {
     m_bins->flush(&m_batch_queue);

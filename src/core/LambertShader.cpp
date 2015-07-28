@@ -32,9 +32,12 @@ void LambertShader::evaluate(
 
   for(size_t i = 0; i < _size; ++i)
   {
-    _result[3 * i + 0] = m_colour[0] * pattern[3 * i + 0];
-    _result[3 * i + 1] = m_colour[1] * pattern[3 * i + 1];
-    _result[3 * i + 2] = m_colour[2] * pattern[3 * i + 2];
+    float cosine = _normal[i].dot(_input[i]);
+    cosine = (cosine < 0.f) ? 0 : cosine;
+
+    _result[3 * i + 0] = m_colour[0] * pattern[3 * i + 0] * cosine;
+    _result[3 * i + 1] = m_colour[1] * pattern[3 * i + 1] * cosine;
+    _result[3 * i + 2] = m_colour[2] * pattern[3 * i + 2] * cosine;
   }
 }
 

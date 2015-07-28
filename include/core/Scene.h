@@ -10,6 +10,7 @@
 #include <core/EmbreeWrapper.h>
 #include <core/PolygonObject.h>
 #include <core/ShaderInterface.h>
+#include <core/LightInterface.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -19,7 +20,7 @@ struct Scene
 
   std::vector< boost::shared_ptr< PolygonObject > > objects;
   std::vector< boost::shared_ptr< ShaderInterface > > shaders;
-  // std::vector< LightInterface > lights;
+  std::vector< boost::shared_ptr< LightInterface > > lights;
   std::map< int, int > shaders_to_lights;
 };
 

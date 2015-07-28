@@ -3,7 +3,7 @@ PROJECT( "msc-project" )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake $ENV{CMAKE_MODULE_PATH})
 
-SET( COMPILER clang )
+SET( COMPILER /usr/local/opt/llvm/bin/clang )
 SET( FLAGS )
 SET( TYPE RelWithDebInfo )
 
@@ -17,6 +17,7 @@ SET( CORE_SOURCES
   ${SRC}/core/DirectionalBins.cpp
   ${SRC}/core/ThinLensCamera.cpp
   ${SRC}/core/PinHoleCamera.cpp
+  ${SRC}/core/QuadLight.cpp
   ${SRC}/core/TentFilter.cpp
   ${SRC}/core/BoxFilter.cpp
   ${SRC}/core/StratifiedSampler.cpp
@@ -48,6 +49,8 @@ SET( CORE_HEADERS
   ${INC}/core/CameraInterface.h
   ${INC}/core/ThinLensCamera.h
   ${INC}/core/PinHoleCamera.h
+  ${INC}/core/LightInterface.h
+  ${INC}/core/QuadLight.h
   ${INC}/core/FilterInterface.h
   ${INC}/core/TentFilter.h
   ${INC}/core/BoxFilter.h

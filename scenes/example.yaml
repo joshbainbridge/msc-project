@@ -1,6 +1,8 @@
 --- # Setup
 
 image:
+  # width: 2048
+  # height: 858
   width: 1024
   height: 429
   sample base: 1
@@ -18,7 +20,7 @@ camera:
   rotation: [ 0, 90, -3 ]
   focal length: 150
   focal distance: 990
-  aperture: 8
+  aperture: 5.6
 
 filter:
   type: Box
@@ -46,15 +48,17 @@ object:
 
 shader:
   type: Lambert
-  colour: [ 0.6, 0.6, 0.6 ]
-  texture: "scenes/textures/dragon_pattern.tx"
+  colour: [ 0.5, 0.5, 0.5 ]
+  texture: "scenes/textures/grid.tx"
 
 shader:
   type: Lambert
-  colour: [ 0.98, 0.98, 0.98 ]
+  colour: [ 0.6, 0.6, 0.6 ]
   texture: "scenes/textures/floor_pattern.tx"
 
 light:
   type: Quad
-  color: [ 0.2, 0.8, 0.1 ]
-  radiance: 234
+  translation: [ 100, 350, 0 ]
+  rotation: [ 0, 0, -90 ]
+  scale: [ 100, 200, 100 ]
+  radiance: 100

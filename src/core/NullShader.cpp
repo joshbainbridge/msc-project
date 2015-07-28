@@ -3,16 +3,22 @@
 MSC_NAMESPACE_BEGIN
 
 void NullShader::evaluate(
-  const Vector3f _input,
-  const Vector3f _output,
-  const Vector3f _normal,
-  OpenImageIO::TextureSystem* _texture_system,
-  const float _u,
-  const float _v,
-  Colour3f* _weight
+  const int _size,
+  TextureSystem _texture_system,
+  const Vector3f* _input,
+  const Vector3f* _output,
+  const Vector3f* _normal,
+  float* _u,
+  float* _v,
+  float* _result
   ) const
 {
-  *_weight = Colour3f(0.f, 0.f, 0.f);
+  for(size_t i = 0; i < _size; ++i)
+  {
+    _result[3 * i + 0] = 0.f;
+    _result[3 * i + 1] = 0.f;
+    _result[3 * i + 2] = 0.f;
+  }
 }
 
 MSC_NAMESPACE_END
