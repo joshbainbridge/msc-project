@@ -3,7 +3,6 @@ PROJECT( "msc-project" )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake $ENV{CMAKE_MODULE_PATH})
 
-SET( COMPILER /usr/local/opt/llvm/bin/clang )
 SET( FLAGS )
 SET( TYPE RelWithDebInfo )
 
@@ -88,6 +87,9 @@ SET( THIRD_PARTY
   ${THR}/tinyobjloader/tiny_obj_loader.h
   )
 
+SET( CMAKE_CXX_FLAGS ${FLAGS} )
+SET( CMAKE_BUILD_TYPE ${TYPE} )
+
 ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME}
   ${SRC}/main.cpp
   )
@@ -104,7 +106,17 @@ ADD_LIBRARY( framebuffer
   )
 
 FIND_PACKAGE( Boost COMPONENTS
-  system filesystem program_options unit_test_framework iostreams thread chrono python REQUIRED )
+  system
+  filesystem
+  program_options
+  unit_test_framework
+  iostreams
+  thread
+  chrono
+  python
+  atomic
+  random
+  REQUIRED )
 FIND_PACKAGE( TBB REQUIRED )
 FIND_PACKAGE( Embree REQUIRED )
 FIND_PACKAGE( Eigen3 REQUIRED )
@@ -124,10 +136,6 @@ IF( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR "Linux" )
   TARGET_LINK_LIBRARIES( framebuffer ${GLEW_LIBRARY} )
 
 ENDIF()
-
-SET(CMAKE_CXX_COMPILER ${CXX} )
-SET(CMAKE_CXX_FLAGS ${FLAGS} )
-SET(CMAKE_BUILD_TYPE ${TYPE} )
 
 INCLUDE_DIRECTORIES(
   ${INC}

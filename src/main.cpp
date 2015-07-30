@@ -6,6 +6,7 @@
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <OpenEXR/ImfRgbaFile.h>
 
 #include <framebuffer/Framebuffer.h>
@@ -124,7 +125,7 @@ int main(int argc, const char *argv[])
 
       std::cout << "\033[1;31mIteration " << iteration << " is complete.\033[0m" << std::endl;
 
-      std::string title = "Pathtracer Iteration: " + std::to_string(iteration + 1);
+      std::string title = "Pathtracer Iteration: " + boost::lexical_cast<std::string>(iteration + 1);
       framebuffer->title(title);
 
       // pathtracer iterate process here...
