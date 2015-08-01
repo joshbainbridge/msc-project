@@ -7,11 +7,22 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Abstract interface class for render camera
+ */
 class CameraInterface
 {
 public:
   virtual ~CameraInterface() {}
 
+  /**
+   * @brief      Creates primary rays from camera
+   *
+   * @param[in]  _count      sample count to process
+   * @param      _positions  positions on film plane of samples
+   * @param      _random     thread local random generator to prevent mutation
+   * @param      _ouput      output of compressed rays
+   */
   virtual void sample(const int _count, float* _positions, RandomGenerator* _random, RayCompressed* _ouput) const =0;
 };
 

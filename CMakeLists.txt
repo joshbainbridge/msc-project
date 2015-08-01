@@ -23,7 +23,7 @@ SET( CORE_SOURCES
   ${SRC}/core/IndependentSampler.cpp
   ${SRC}/core/GridSampler.cpp
   ${SRC}/core/Camera.cpp
-  ${SRC}/core/Shading.cpp
+  ${SRC}/core/Integrator.cpp
   ${SRC}/core/RaySort.cpp
   ${SRC}/core/RayIntersect.cpp
   ${SRC}/core/RayDecompress.cpp
@@ -58,7 +58,7 @@ SET( CORE_HEADERS
   ${INC}/core/IndependentSampler.h
   ${INC}/core/GridSampler.h
   ${INC}/core/Camera.h
-  ${INC}/core/Shading.h
+  ${INC}/core/Integrator.h
   ${INC}/core/RayCompressed.h
   ${INC}/core/RayUncompressed.h
   ${INC}/core/RaySort.h

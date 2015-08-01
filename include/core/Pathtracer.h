@@ -22,15 +22,34 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Rendering engine and interface to external programs
+ */
 class Pathtracer
 {
 public:
   Pathtracer(const std::string &_filename);
   ~Pathtracer();
 
+  /**
+   * @brief      Retrieves internal data on the final image
+   *
+   * @param      _pixels  a pointer to internal pixel data
+   * @param      _with    will be set to width of image
+   * @param      _height  will be set to height of image
+   */
   void image(float** _pixels, int* _with, int* _height);
+
+  /**
+   * @brief      Clear internal image data including samples and pixels
+   */
   void clear();
 
+  /**
+   * @brief      Compute a single iteration of image
+   *
+   * @return     current itteration count
+   */
   int process();
 
 private:
@@ -52,7 +71,6 @@ private:
   bool batchLoading(BatchItem* batch_info);
   void fileLoading(const BatchItem& batch_info, RayCompressed* batch_compressed);
   void rayDecompressing(const BatchItem& batch_info, RayCompressed* batch_compressed, RayUncompressed* batch_uncompressed);
-  void raySorting(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void sceneTraversal(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void hitPointSorting(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void surfaceShading(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);

@@ -9,6 +9,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Functor class to decompress an array of rays
+ */
 class RayDecompress
 {
 public:
@@ -17,6 +20,11 @@ public:
    , m_output(_output)
   {;}
 
+  /**
+   * @brief      Operator overloader to allow the class to act as a functor with tbb
+   * 
+   * @param[in]  r           a one dimensional range over an array of rays
+   */
   void operator()(const tbb::blocked_range< size_t >& r) const;
 
 private:

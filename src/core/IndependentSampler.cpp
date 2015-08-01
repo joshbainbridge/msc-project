@@ -4,12 +4,12 @@ MSC_NAMESPACE_BEGIN
 
 void IndependentSampler::sample(const int _base, RandomGenerator* _random, float* _output) const
 {
-  for(size_t iterator_x = 0; iterator_x < _base; ++iterator_x)
+  for(size_t index_x = 0; index_x < _base; ++index_x)
   {
-    for(size_t iterator_y = 0; iterator_y < _base; ++iterator_y)
+    for(size_t index_y = 0; index_y < _base; ++index_y)
     {
-      _output[2 * (iterator_y + iterator_x * _base) + 0] = _random->getSample();
-      _output[2 * (iterator_y + iterator_x * _base) + 1] = _random->getSample();
+      _output[2 * (index_y + index_x * _base) + 0] = _random->getSample();
+      _output[2 * (index_y + index_x * _base) + 1] = _random->getSample();
     }
   }
 }

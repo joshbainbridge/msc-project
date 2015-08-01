@@ -2,7 +2,7 @@
 
 MSC_NAMESPACE_BEGIN
 
-void QuadLight::sample(const unsigned int _size, RandomGenerator* _random, Vector3f* _position, Vector3f* _input, Colour3f* _radiance) const
+void QuadLight::illuminate(const unsigned int _size, RandomGenerator* _random, Vector3f* _position, Vector3f* _input, Colour3f* _radiance) const
 {
   Affine3f transform = Affine3f::Identity()
    * Eigen::AngleAxisf(m_rotation.y() * M_PI_180, Vector3f::UnitY())

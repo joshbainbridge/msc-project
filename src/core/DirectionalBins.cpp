@@ -4,33 +4,33 @@ MSC_NAMESPACE_BEGIN
 
 DirectionalBins::DirectionalBins(size_t _exponent) : m_exponent(_exponent)
 {
-  for(size_t iterator = 0; iterator < 6; ++iterator)
+  for(size_t index = 0; index < 6; ++index)
   {
-    m_bin[iterator].size = 0;
+    m_bin[index].size = 0;
 
     std::string file_location = boost::filesystem::temp_directory_path().string();
     std::string file_name = boost::filesystem::unique_path().string();
-    m_bin[iterator].path = file_location + file_name;
+    m_bin[index].path = file_location + file_name;
 
     size_t file_size = pow(2, m_exponent);
 
     boost::iostreams::mapped_file_params params;
-    params.path = m_bin[iterator].path;
+    params.path = m_bin[index].path;
     params.new_file_size = file_size * sizeof(RayCompressed);
     params.mode = std::ios_base::out;
 
-    m_bin[iterator].outfile.open(params);
-    m_bin[iterator].pointer = (RayCompressed*)(m_bin[iterator].outfile.data());
-    m_bin[iterator].end = m_bin[iterator].pointer + file_size;
+    m_bin[index].outfile.open(params);
+    m_bin[index].pointer = (RayCompressed*)(m_bin[index].outfile.data());
+    m_bin[index].end = m_bin[index].pointer + file_size;
   }
 }
 
 DirectionalBins::~DirectionalBins()
 {
-  for(size_t iterator = 0; iterator < 6; ++iterator)
+  for(size_t index = 0; index < 6; ++index)
   {
-    m_bin[iterator].outfile.close();
-    boost::filesystem::remove(m_bin[iterator].path);
+    m_bin[index].outfile.close();
+    boost::filesystem::remove(m_bin[index].path);
   }
 }
 
@@ -73,18 +73,18 @@ void DirectionalBins::add(const int _size, const int _cardinal, RayCompressed* _
 
 void DirectionalBins::flush(tbb::concurrent_queue< BatchItem >* _batch_queue)
 {
-  for(size_t iterator = 0; iterator < 6; ++iterator)
+  for(size_t index = 0; index < 6; ++index)
   {
-    m_bin[iterator].outfile.close();
+    m_bin[index].outfile.close();
     
-    if(m_bin[iterator].size > 0)
+    if(m_bin[index].size > 0)
     {
       BatchItem batch;
-      batch.filename = m_bin[iterator].path;
-      batch.size = m_bin[iterator].size;
+      batch.filename = m_bin[index].path;
+      batch.size = m_bin[index].size;
       _batch_queue->push(batch);
       
-      m_bin[iterator].size = 0;
+      m_bin[index].size = 0;
     }
   }
 }

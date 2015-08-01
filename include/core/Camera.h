@@ -15,6 +15,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Used to create primary rays from scene camera
+ */
 class Camera
 {
 public:
@@ -34,6 +37,11 @@ public:
    , m_local_thread_storage(_local_thread_storage)
   {;}
 
+  /**
+   * @brief      Operator overloader to allow the class to act as a functor with tbb
+   * 
+   * @param[in]  r           a two dimentional blocked range over image resolution
+   */
   void operator()(const tbb::blocked_range2d< size_t > &r) const;
 
 private:

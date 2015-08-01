@@ -14,6 +14,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Data structure for scene information such as objects, lights and shaders
+ */
 struct Scene
 {
   RTCScene rtc_scene;

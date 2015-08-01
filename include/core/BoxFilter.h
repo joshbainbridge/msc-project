@@ -6,9 +6,26 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Inherits from the filter interface and represents a box filter function
+ */
 class BoxFilter : public FilterInterface
 {
 public:
+
+  /**
+   * @brief      Convolution function for producing final image
+   *
+   * @param[in]  _width       width of image in pixels
+   * @param[in]  _height      height of image in pixels
+   * @param[in]  _samples     maximum samples
+   * @param[in]  _rows_begin  begining of range to be calcualted in the vertical direction
+   * @param[in]  _rows_end    end of range to be calcualted in the vertical direction
+   * @param[in]  _cols_begin  begining of range to be calcualted in the horizontal direction
+   * @param[in]  _cols_end    end of range to be calcualted in the horizontal direction
+   * @param      _input       input sample data
+   * @param      _output      output image
+   */
   void convolve(
     const size_t _width,
     const size_t _height,

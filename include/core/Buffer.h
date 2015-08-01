@@ -8,6 +8,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Holds local rays as they are produced to minimise thread contention
+ */
 struct Buffer
 {
   // size_t size;

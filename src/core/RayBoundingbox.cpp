@@ -14,21 +14,21 @@ void RayBoundingbox::operator()(const tbb::blocked_range< size_t >& r)
   m_value.max[1] = m_data[begin].org[1];
   m_value.max[2] = m_data[begin].org[2];
 
-  for(size_t iterator = begin; iterator < end; ++iterator)
+  for(size_t index = begin; index < end; ++index)
   {
-    if(m_data[iterator].org[0] < m_value.min[0])
-      m_value.min[0] = m_data[iterator].org[0];
-    if(m_data[iterator].org[1] < m_value.min[1])
-      m_value.min[1] = m_data[iterator].org[1];
-    if(m_data[iterator].org[2] < m_value.min[2])
-      m_value.min[2] = m_data[iterator].org[2];
+    if(m_data[index].org[0] < m_value.min[0])
+      m_value.min[0] = m_data[index].org[0];
+    if(m_data[index].org[1] < m_value.min[1])
+      m_value.min[1] = m_data[index].org[1];
+    if(m_data[index].org[2] < m_value.min[2])
+      m_value.min[2] = m_data[index].org[2];
 
-    if(m_data[iterator].org[0] > m_value.max[0])
-      m_value.max[0] = m_data[iterator].org[0];
-    if(m_data[iterator].org[1] > m_value.max[1])
-      m_value.max[1] = m_data[iterator].org[1];
-    if(m_data[iterator].org[2] > m_value.max[2])
-      m_value.max[2] = m_data[iterator].org[2];
+    if(m_data[index].org[0] > m_value.max[0])
+      m_value.max[0] = m_data[index].org[0];
+    if(m_data[index].org[1] > m_value.max[1])
+      m_value.max[1] = m_data[index].org[1];
+    if(m_data[index].org[2] > m_value.max[2])
+      m_value.max[2] = m_data[index].org[2];
   }
 }
 

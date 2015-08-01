@@ -8,9 +8,18 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      A uniform random generator using boosts mersenne twister algorithm
+ */
 class RandomGenerator
 {
 public:
+
+  /**
+   * @brief      Creates a uniform random number between 0 and 1 
+   *
+   * @return     random number
+   */
   float getSample();
 
 private:

@@ -23,7 +23,7 @@
 #include <core/RayBoundingbox.h>
 #include <core/Convolve.h>
 #include <core/Camera.h>
-#include <core/Shading.h>
+#include <core/Integrator.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -289,7 +289,7 @@ void Pathtracer::surfaceShading(const BatchItem& batch_info, RayUncompressed* ba
   // Intergrate shading and create secondary rays
   tbb::parallel_for(
     RangeGeom< RayUncompressed* >(0, batch_info.size, batch_uncompressed),
-    Shading(m_scene.get(), m_image.get(), m_bins.get(), &m_batch_queue, &m_thread_texture_system, &m_thread_random_generator, batch_uncompressed),
+    Integrator(m_scene.get(), m_image.get(), m_bins.get(), &m_batch_queue, &m_thread_texture_system, &m_thread_random_generator, batch_uncompressed),
     tbb::simple_partitioner()
     );
 }
@@ -316,8 +316,8 @@ Pathtracer::Pathtracer(const std::string &_filename)
 
 Pathtracer::~Pathtracer()
 {
-  for(LocalTextureSystem::const_iterator i = m_thread_texture_system.begin(); i != m_thread_texture_system.end();  ++i)
-    OpenImageIO::TextureSystem::destroy(*i, false);
+  for(LocalTextureSystem::const_iterator it = m_thread_texture_system.begin(); it != m_thread_texture_system.end();  ++it)
+    OpenImageIO::TextureSystem::destroy(*it, false);
 
   rtcDeleteScene(m_scene->rtc_scene);
   rtcExit();

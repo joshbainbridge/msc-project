@@ -6,6 +6,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Structure to contain a uncompressed ray
+ */
 struct RayUncompressed
 {
   union
@@ -48,6 +51,9 @@ inline bool operator==(const RayUncompressed &lhs, const RayUncompressed &rhs)
 inline bool operator!=(const RayUncompressed &lhs, const RayUncompressed &rhs)
 {return (lhs.geomID != rhs.geomID);}
 
+/**
+ * @brief      Comparison functor for uncompressed rays based on hit geometry and primative id
+ */
 struct CompareHit
 {
   bool operator()(const RayUncompressed &lhs, const RayUncompressed &rhs) const
@@ -56,6 +62,9 @@ struct CompareHit
   }
 };
 
+/**
+ * @brief      Comparison functor for uncompressed rays based on position
+ */
 class CompareOrg
 {
 public:
@@ -70,6 +79,9 @@ private:
   size_t m_axis;
 };
 
+/**
+ * @brief      Comparison functor for uncompressed rays based on direction
+ */
 class CompareDir
 {
 public:

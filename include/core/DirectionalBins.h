@@ -17,6 +17,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Single bin to store compressed ray data
+ */
 struct Bin
 {
   boost::iostreams::mapped_file_sink outfile;
@@ -29,12 +32,23 @@ struct Bin
   boost::mutex mutex;
 };
 
+/**
+ * @brief      A shared container for six cardinal bins of compressed rays
+ */
 class DirectionalBins
 {
 public:
   DirectionalBins(size_t _exponent);
   ~DirectionalBins();
 
+  /**
+   * @brief      Add array of compressed rays to an indexed bin
+   *
+   * @param[in]  _size         size of array to be added
+   * @param[in]  _cardinal     index of which directional bin
+   * @param      _data         input ray data
+   * @param      _batch_queue  output queue to store batch representation
+   */
   void add(const int _size, const int _cardinal, RayCompressed* _data, tbb::concurrent_queue< BatchItem >* _batch_queue);
   void flush(tbb::concurrent_queue< BatchItem >* _batch_queue);
 

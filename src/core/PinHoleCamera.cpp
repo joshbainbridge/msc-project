@@ -17,12 +17,12 @@ void PinHoleCamera::sample(const int _count, float* _positions, RandomGenerator*
 
   msc::Vector3fMap mapped_position(NULL);
   msc::Vector3fMap mapped_direction(NULL);
-  for(size_t iterator = 0; iterator < _count; ++iterator)
+  for(size_t index = 0; index < _count; ++index)
   {
-    new (&mapped_position) msc::Vector3fMap((float*) &(_ouput[iterator].org));
-    new (&mapped_direction) msc::Vector3fMap((float*) &(_ouput[iterator].dir));
+    new (&mapped_position) msc::Vector3fMap((float*) &(_ouput[index].org));
+    new (&mapped_direction) msc::Vector3fMap((float*) &(_ouput[index].dir));
 
-    Vector3f film_position = m_translation + (right * _positions[2 * iterator + 0]) + (up * _positions[2 * iterator + 1]);
+    Vector3f film_position = m_translation + (right * _positions[2 * index + 0]) + (up * _positions[2 * index + 1]);
 
     mapped_position = nodal_point;
     mapped_direction = (nodal_point - film_position).normalized();

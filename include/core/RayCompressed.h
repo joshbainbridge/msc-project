@@ -5,6 +5,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Structure to contain a compressed ray
+ */
 struct RayCompressed
 {
   float org[3];

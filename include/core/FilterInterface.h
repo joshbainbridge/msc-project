@@ -6,11 +6,27 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Abstract interface class for image filtering
+ */
 class FilterInterface
 {
 public:
   virtual ~FilterInterface() {}
 
+  /**
+   * @brief      Convolution function for producing final image
+   *
+   * @param[in]  _width       width of image in pixels
+   * @param[in]  _height      height of image in pixels
+   * @param[in]  _samples     maximum samples
+   * @param[in]  _rows_begin  begining of range to be calcualted in the vertical direction
+   * @param[in]  _rows_end    end of range to be calcualted in the vertical direction
+   * @param[in]  _cols_begin  begining of range to be calcualted in the horizontal direction
+   * @param[in]  _cols_end    end of range to be calcualted in the horizontal direction
+   * @param      _input       input sample data
+   * @param      _output      output image
+   */
   virtual void convolve(
     const size_t _width,
     const size_t _height,
@@ -22,10 +38,6 @@ public:
     Sample* _input,
     Pixel* _output
     ) const =0;
-
-protected:
-  float m_variable_one;
-  float m_variable_two;
 };
 
 MSC_NAMESPACE_END

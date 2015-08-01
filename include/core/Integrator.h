@@ -1,5 +1,5 @@
-#ifndef _SHADING_H_
-#define _SHADING_H_
+#ifndef _INTEGRATOR_H_
+#define _INTEGRATOR_H_
 
 #include <tbb/tbb.h>
 
@@ -15,6 +15,11 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      A range template that describes a one dimensional range containing an equal comparison
+ *
+ * @tparam     type  Type of data in range that must be comparible
+ */
 template < typename type > class RangeGeom {
 public:
   RangeGeom(size_t _begin, size_t _end, type _array)
@@ -23,22 +28,28 @@ public:
    , m_array(_array)
   {;}
 
+  /**
+   * @brief      Splitting function to allow construction of equal value ranges with tbb
+   *
+   * @param      r          previously constructed range
+   * @param[in]  <unnamed>  required to adhere to tbb's specification
+   */
   RangeGeom(RangeGeom &r, tbb::split)
   {
     m_array = r.m_array;
     m_end = r.m_end;
 
     size_t division = r.m_begin;
-    for(size_t iterator = r.m_begin; iterator < r.m_end; ++iterator)
+    for(size_t index = r.m_begin; index < r.m_end; ++index)
     {
-      if(m_array[r.m_begin] != m_array[iterator])
+      if(m_array[r.m_begin] != m_array[index])
       {
-        division = iterator;
+        division = index;
         break;
       }
-      else if((iterator - r.m_begin) == 4096)
+      else if((index - r.m_begin) == 4096)
       {
-        division = iterator;
+        division = index;
         break;
       }
     }
@@ -47,13 +58,35 @@ public:
     r.m_end = division;
   }
 
+  /**
+   * @brief      Check if range is empty
+   *
+   * @return     boolean value
+   */
   bool empty() const {return m_begin == m_end;}
+
+  /**
+   * @brief      Is range currently divisible into sub-ranges
+   *
+   * @return     boolean value
+   */
   bool is_divisible() const
   {
     return (m_array[m_begin] != m_array[m_end - 1]) || ((m_end - m_begin) > 4096);
   }
 
+  /**
+   * @brief      Getter method for first index of range
+   *
+   * @return     first index
+   */
   size_t begin() const {return m_begin;}
+
+  /**
+   * @brief      Getter method for first index in range
+   *
+   * @return     last index
+   */
   size_t end() const {return m_end;}
 
   static const bool is_splittable_in_proportion = false;
@@ -64,10 +97,13 @@ public:
   type m_array;
 };
 
-class Shading
+/**
+ * @brief      Lighting intergrator for surface intersections
+ */
+class Integrator
 {
 public:
-  Shading(
+  Integrator(
     Scene* _scene,
     Image* _image,
     DirectionalBins* _bins,
@@ -85,6 +121,11 @@ public:
    , m_local_thread_storage_random(_local_thread_storage_random)
   {;}
 
+  /**
+   * @brief      Operator overloader to allow the class to act as a functor with tbb
+   * 
+   * @param[in]  r           a constant range according to geometry id over found hit point
+   */
   void operator()(const RangeGeom< RayUncompressed* > &r) const;
 
 private:

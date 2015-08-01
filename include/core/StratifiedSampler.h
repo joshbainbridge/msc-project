@@ -6,9 +6,20 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Inherits from the sampler interface and represents a stratified sampler function
+ */
 class StratifiedSampler : public SamplerInterface
 {
 public:
+  
+  /**
+   * @brief      Create a stratified grid of samples across pixel area
+   *
+   * @param[in]  _base    base of sample count
+   * @param      _random  thread local random generator to prevent mutation
+   * @param      _output  output array of samples
+   */
   void sample(const int _base, RandomGenerator* _random, float* _output) const;
 };
 

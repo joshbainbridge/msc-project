@@ -11,6 +11,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Structure containing information on a polygon object
+ */
 struct PolygonObject
 {
   std::string filename;

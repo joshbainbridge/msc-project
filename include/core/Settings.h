@@ -5,6 +5,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Structure of settings information
+ */
 struct Settings
 {
   size_t ray_depth;

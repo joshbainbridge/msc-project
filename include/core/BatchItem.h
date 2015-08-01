@@ -7,6 +7,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Used to represent an unprocessed batch
+ */
 struct BatchItem
 {
   std::string filename;

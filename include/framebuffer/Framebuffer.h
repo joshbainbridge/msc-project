@@ -10,6 +10,9 @@
 
 FRM_NAMESPACE_BEGIN
 
+/**
+ * @brief      Generic framebuffer for visualizing images
+ */
 class Framebuffer
 {
 public:
@@ -28,11 +31,49 @@ public:
   {;}
 
   ~Framebuffer();
+
+  /**
+   * @brief      Initialize framebuffer with parameters and optional control class
+   *
+   * @param[in]  _resx        buffers horizontal resolution
+   * @param[in]  _resy        buffers vertical resolution
+   * @param      _input_data  optional void pointer to class for overriding default key callback
+   *
+   * @return     window to be passed to key callback overloading class
+   */
   GLFWwindow* init(const int _resx, const int _resy, void* _input_data = NULL);
+
+  /**
+   * @brief      bind data before drawing in case of use with other contexts
+   */
   void bind();
+
+  /**
+   * @brief      draw image to framebuffer
+   */
   void draw();
+
+  /**
+   * @brief      Test if window should close
+   *
+   * @return     boolean value
+   */
   bool close();
+
+  /**
+   * @brief      Set location of image data to be passed onto gpu
+   *
+   * @param[in]  _image     pointer to image data
+   * @param[in]  _resx      horizontal resolution
+   * @param[in]  _resy      vertical resolution
+   */
   void image(const unsigned char* _image, const int _resx, const int _resy);
+
+  /**
+   * @brief      Set framebuffer window title to string
+   *
+   * @param[in]  _title  title
+   */
   void title(const std::string &_title);
 
 private:

@@ -7,18 +7,27 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Sample structure representing colour and position on image
+ */
 struct Sample
 {
   float x, y;
   float r, g, b;
 };
 
+/**
+ * @brief      Union data type of a rgb spectral representation
+ */
 union Pixel
 {
   struct {float r, g, b;};
   float v[3];
 };
 
+/**
+ * @brief      Image structure that contains sample and pixel data
+ */
 struct Image
 {
   size_t width;

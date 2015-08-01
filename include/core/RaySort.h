@@ -8,6 +8,9 @@
 
 MSC_NAMESPACE_BEGIN
 
+/**
+ * @brief      Sorts rays according to a ray position and direction recursively and in parallel
+ */
 class RaySort
 {
 public:
@@ -23,6 +26,9 @@ public:
    , m_output(_output)
   {;}
 
+  /**
+   * @brief      Operator overloader to allow the class to act as a functor with tbb
+   */
   void operator()() const;
 
 private:

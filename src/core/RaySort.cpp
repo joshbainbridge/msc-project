@@ -36,21 +36,21 @@ void RaySort::operator()() const
       llimits.max[1] = m_output[m_begin].dir[1];
       llimits.max[2] = m_output[m_begin].dir[2];
 
-      for(size_t iterator = m_begin; iterator < middle; ++iterator)
+      for(size_t index = m_begin; index < middle; ++index)
       {
-        if(m_output[iterator].dir[0] < llimits.min[0])
-          llimits.min[0] = m_output[iterator].dir[0];
-        if(m_output[iterator].dir[1] < llimits.min[1])
-          llimits.min[1] = m_output[iterator].dir[1];
-        if(m_output[iterator].dir[2] < llimits.min[2])
-          llimits.min[2] = m_output[iterator].dir[2];
+        if(m_output[index].dir[0] < llimits.min[0])
+          llimits.min[0] = m_output[index].dir[0];
+        if(m_output[index].dir[1] < llimits.min[1])
+          llimits.min[1] = m_output[index].dir[1];
+        if(m_output[index].dir[2] < llimits.min[2])
+          llimits.min[2] = m_output[index].dir[2];
 
-        if(m_output[iterator].dir[0] > llimits.max[0])
-          llimits.max[0] = m_output[iterator].dir[0];
-        if(m_output[iterator].dir[1] > llimits.max[1])
-          llimits.max[1] = m_output[iterator].dir[1];
-        if(m_output[iterator].dir[2] > llimits.max[2])
-          llimits.max[2] = m_output[iterator].dir[2];
+        if(m_output[index].dir[0] > llimits.max[0])
+          llimits.max[0] = m_output[index].dir[0];
+        if(m_output[index].dir[1] > llimits.max[1])
+          llimits.max[1] = m_output[index].dir[1];
+        if(m_output[index].dir[2] > llimits.max[2])
+          llimits.max[2] = m_output[index].dir[2];
       }
     }
 
@@ -68,21 +68,21 @@ void RaySort::operator()() const
       rlimits.max[1] = m_output[middle].dir[1];
       rlimits.max[2] = m_output[middle].dir[2];
 
-      for(size_t iterator = middle; iterator < m_end; ++iterator)
+      for(size_t index = middle; index < m_end; ++index)
       {
-        if(m_output[iterator].dir[0] < rlimits.min[0])
-          rlimits.min[0] = m_output[iterator].dir[0];
-        if(m_output[iterator].dir[1] < rlimits.min[1])
-          rlimits.min[1] = m_output[iterator].dir[1];
-        if(m_output[iterator].dir[2] < rlimits.min[2])
-          rlimits.min[2] = m_output[iterator].dir[2];
+        if(m_output[index].dir[0] < rlimits.min[0])
+          rlimits.min[0] = m_output[index].dir[0];
+        if(m_output[index].dir[1] < rlimits.min[1])
+          rlimits.min[1] = m_output[index].dir[1];
+        if(m_output[index].dir[2] < rlimits.min[2])
+          rlimits.min[2] = m_output[index].dir[2];
 
-        if(m_output[iterator].dir[0] > rlimits.max[0])
-          rlimits.max[0] = m_output[iterator].dir[0];
-        if(m_output[iterator].dir[1] > rlimits.max[1])
-          rlimits.max[1] = m_output[iterator].dir[1];
-        if(m_output[iterator].dir[2] > rlimits.max[2])
-          rlimits.max[2] = m_output[iterator].dir[2];
+        if(m_output[index].dir[0] > rlimits.max[0])
+          rlimits.max[0] = m_output[index].dir[0];
+        if(m_output[index].dir[1] > rlimits.max[1])
+          rlimits.max[1] = m_output[index].dir[1];
+        if(m_output[index].dir[2] > rlimits.max[2])
+          rlimits.max[2] = m_output[index].dir[2];
       }
     }
 
