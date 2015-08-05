@@ -11,6 +11,7 @@
 #include <core/Image.h>
 #include <core/BatchItem.h>
 #include <core/RayUncompressed.h>
+#include <core/RayCompressed.h>
 #include <core/RandomGenerator.h>
 
 MSC_NAMESPACE_BEGIN

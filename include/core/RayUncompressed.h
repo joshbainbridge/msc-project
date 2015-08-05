@@ -43,6 +43,9 @@ struct RayUncompressed
   };
 
   //Added data
+  float weight[3];
+  float lastPdf;
+  int rayDepth;
   int sampleID;
 };
 

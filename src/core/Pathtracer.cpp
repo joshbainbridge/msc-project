@@ -16,6 +16,7 @@
 #include <core/GridSampler.h>
 #include <core/PolygonObject.h>
 #include <core/LambertShader.h>
+#include <core/NullShader.h>
 #include <core/QuadLight.h>
 #include <core/RaySort.h>
 #include <core/RayIntersect.h>
@@ -45,17 +46,17 @@ void Pathtracer::construct(const std::string &_filename)
     if(node_setup["image"])
       *image = node_setup["image"].as<Image>();
 
-    size_t sample_count = image->width * image->height * image->base * image->base;
-    image->samples.resize(sample_count);
+    Sample temp_sample;
+    temp_sample.r = 0.f;
+    temp_sample.g = 0.f;
+    temp_sample.b = 0.f;
+    image->samples.resize(image->width * image->height * image->base * image->base, temp_sample);
 
-    size_t pixel_count = image->width * image->height;
-    image->pixels.resize(pixel_count);
-    for(size_t i = 0; i < pixel_count; ++i)
-    {
-      image->pixels[i].r = 0.f;
-      image->pixels[i].g = 0.f;
-      image->pixels[i].b = 0.f;
-    }
+    Pixel temp_pixel;
+    temp_pixel.r = 0.f;
+    temp_pixel.g = 0.f;
+    temp_pixel.b = 0.f;
+    image->pixels.resize(image->width * image->height, temp_pixel);
 
     m_image.reset(image);
   }
@@ -169,15 +170,15 @@ void Pathtracer::construct(const std::string &_filename)
         size_t geom_id = rtcNewTriangleMesh(
           m_scene->rtc_scene,
           RTC_GEOMETRY_STATIC,
-          polygon_object->indices.size() / 3,
-          polygon_object->positions.size() / 4
+          polygon_object->indices().size() / 3,
+          polygon_object->positions().size() / 4
           );
 
         rtcSetBuffer(
           m_scene->rtc_scene,
           geom_id,
           RTC_VERTEX_BUFFER,
-          &(polygon_object->positions[0]),
+          &(polygon_object->positions()[0]),
           0,
           4 * sizeof(float)
           );
@@ -186,7 +187,7 @@ void Pathtracer::construct(const std::string &_filename)
           m_scene->rtc_scene,
           geom_id,
           RTC_INDEX_BUFFER,
-          &(polygon_object->indices[0]),
+          &(polygon_object->indices()[0]),
           0,
           3 * sizeof(unsigned int)
           );
@@ -216,8 +217,46 @@ void Pathtracer::construct(const std::string &_filename)
     {
       if(second["type"].as< std::string >() == "Quad")
       {
+        int shader_id = m_scene->shaders.size();
+        int light_id = m_scene->lights.size();
+        m_scene->shaders_to_lights.insert(std::make_pair(shader_id, light_id));
+
+        boost::shared_ptr< PolygonObject > polygon_object(new PolygonObject);
+        polygon_object->shader(shader_id);
+        m_scene->objects.push_back(polygon_object);
+
+        boost::shared_ptr< NullShader > null_shader(new NullShader);
+        m_scene->shaders.push_back(null_shader);
+
         boost::shared_ptr< QuadLight > quad_light(new QuadLight);
         *quad_light = second.as<QuadLight>();
+
+        size_t geom_id = rtcNewTriangleMesh(
+          m_scene->rtc_scene,
+          RTC_GEOMETRY_STATIC,
+          quad_light->indices().size() / 3,
+          quad_light->positions().size() / 4
+          );
+
+        rtcSetBuffer(
+          m_scene->rtc_scene,
+          geom_id,
+          RTC_VERTEX_BUFFER,
+          &(quad_light->positions()[0]),
+          0,
+          4 * sizeof(float)
+          );
+
+        rtcSetBuffer(
+          m_scene->rtc_scene,
+          geom_id,
+          RTC_INDEX_BUFFER,
+          &(quad_light->indices()[0]),
+          0,
+          3 * sizeof(unsigned int)
+          );
+
+        rtcSetMask(m_scene->rtc_scene, geom_id, 0xF0000000);
 
         m_scene->lights.push_back(quad_light);
       }

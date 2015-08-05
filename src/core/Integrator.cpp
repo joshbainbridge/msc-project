@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <core/Integrator.h>
-#include <core/PolygonObject.h>
+#include <core/ObjectInterface.h>
 #include <core/ShaderInterface.h>
 #include <core/LightInterface.h>
 
@@ -17,132 +17,201 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
   if(texture_system == NULL)
     texture_system = OpenImageIO::TextureSystem::create(true);
 
-  // Get geometry id for group
+  size_t range_size = (r.end() - r.begin());
   size_t geom_id = m_batch[r.begin()].geomID;
+  size_t light_count = m_scene->lights.size();
+  float light_pick_probability = 1.f / light_count;
 
-  // Did the points hit an object
-  if(geom_id != -1)
+  if(geom_id == -1)
+    return;
+
+  ObjectInterface* object = m_scene->objects[geom_id].get();
+
+  int intersected_light = -1;
+  std::map<int, int>::const_iterator iterator = m_scene->shaders_to_lights.find(object->shader());
+  if(iterator != m_scene->shaders_to_lights.end())
+    intersected_light = iterator->second;
+
+  // If a light was hit
+  if(intersected_light >= 0)
   {
-    // Which object did they hit
-    PolygonObject* object = m_scene->objects[geom_id].get();
+    LightInterface* light = m_scene->lights[intersected_light].get();
 
-    // Check if object is a light
-    int light_id = -1;
-
-    std::map<int, int>::const_iterator iterator = m_scene->shaders_to_lights.find(object->shader);
-    if(iterator != m_scene->shaders_to_lights.end())
-      light_id = iterator->second;
-
-    // If object is a surface
-    if(light_id == -1)
-    {
-      ShaderInterface* shader = m_scene->shaders[object->shader].get();
-      LightInterface* light = m_scene->lights[0].get();
-
-      size_t range = r.end() - r.begin();
-
-      float* result = new float[range * 3];
-      float* u = new float[range];
-      float* v = new float[range];
-      Vector3f* input = new Vector3f[range];
-      Vector3f* output = new Vector3f[range];
-      Vector3f* normal = new Vector3f[range];
-      Vector3f* position = new Vector3f[range];
-      Colour3f* radiance = new Colour3f[range];
-
-      //Pre loop through the group
-      for(size_t index = r.begin(); index < r.end(); ++index)
-      {
-        size_t stack_index = index - r.begin();
-
-        // Find the index to each vertex of the intersected primitive
-        size_t vertex01 = object->indices[3 * m_batch[index].primID + 0];
-        size_t vertex02 = object->indices[3 * m_batch[index].primID + 1];
-        size_t vertex03 = object->indices[3 * m_batch[index].primID + 2];
-
-        // The primitives barycentric coordinates
-        float s = m_batch[index].u;
-        float t = m_batch[index].v;
-
-        // The intersected texture coordinates
-        u[stack_index] = (1.f - s - t) * object->texcoords[2 * vertex01 + 0] + 
-        s * object->texcoords[2 * vertex02 + 0] + 
-        t * object->texcoords[2 * vertex03 + 0];
-
-        v[stack_index] = (1.f - s - t) * object->texcoords[2 * vertex01 + 1] + 
-        s * object->texcoords[2 * vertex02 + 1] + 
-        t * object->texcoords[2 * vertex03 + 1];
-
-        normal[stack_index][0] = (1.f - s - t) * object->normals[3 * vertex01 + 0] + 
-        s * object->normals[3 * vertex02 + 0] + 
-        t * object->normals[3 * vertex03 + 0];
-
-        normal[stack_index][1] = (1.f - s - t) * object->normals[3 * vertex01 + 1] + 
-        s * object->normals[3 * vertex02 + 1] + 
-        t * object->normals[3 * vertex03 + 1];
-
-        normal[stack_index][2] = (1.f - s - t) * object->normals[3 * vertex01 + 2] + 
-        s * object->normals[3 * vertex02 + 2] + 
-        t * object->normals[3 * vertex03 + 2];
-
-        Vector3f origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
-        Vector3f direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
-
-        position[stack_index] = origin + direction * (m_batch[index].tfar - M_EPSILON);
-        output[stack_index] = direction * -1.f;
-      }
-
-      // Evaluate light
-      light->illuminate(range, &random, position, input, radiance);
-
-      // Evaluate shader
-      shader->evaluate(range, texture_system, input, output, normal, u, v, result);
-
-      //Post loop through the group
-      for(size_t index = r.begin(); index < r.end(); ++index)
-      {
-        size_t stack_index = index - r.begin();
-
-        // Add shader colour to samples
-        m_image->samples[m_batch[index].sampleID].r = result[3 * stack_index + 0] * radiance[stack_index][0];
-        m_image->samples[m_batch[index].sampleID].g = result[3 * stack_index + 1] * radiance[stack_index][1];
-        m_image->samples[m_batch[index].sampleID].b = result[3 * stack_index + 2] * radiance[stack_index][2];
-      }
-
-      delete[] result;
-      delete[] u;
-      delete[] v;
-      delete[] input;
-      delete[] output;
-      delete[] normal;
-      delete[] position;
-      delete[] radiance;
-    }
-    // If object is a light
-    else
-    {
-      //Loopt through the group
-      for(size_t index = r.begin(); index < r.end(); ++index)
-      {
-        // Set samples to white
-        m_image->samples[m_batch[index].sampleID].r = 1.f;
-        m_image->samples[m_batch[index].sampleID].g = 1.f;
-        m_image->samples[m_batch[index].sampleID].b = 1.f;
-      }
-    }
-  }
-  // If they did not hit an object
-  else
-  {
-    //Loopt through the group
+    // Loop through the group
     for(size_t index = r.begin(); index < r.end(); ++index)
     {
-      // Set samples to black
-      m_image->samples[m_batch[index].sampleID].r = 0.f;
-      m_image->samples[m_batch[index].sampleID].g = 0.f;
-      m_image->samples[m_batch[index].sampleID].b = 0.f;
+      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
+
+      Colour3f light_radiance;
+      float light_pdfa;
+      float cos_theta;
+
+      light->radiance(ray_direction, &light_radiance, &cos_theta, &light_pdfa);
+
+      float mis_balance = 1.0f;
+      if(m_batch[index].rayDepth > 0)
+      {
+        float light_pdfw = areaToAngleProbability(light_pdfa, m_batch[index].tfar, cos_theta);
+        float last_pdfw = m_batch[index].lastPdf;
+        mis_balance = misTwo(last_pdfw, light_pdfw * light_pick_probability);
+      }
+      // mis_balance = 0.5f;
+
+      if(light_radiance.matrix().norm() > M_EPSILON)
+      {
+        // Add light radiance to samples
+        m_image->samples[m_batch[index].sampleID].r += light_radiance[0] * mis_balance * m_batch[index].weight[0];
+        m_image->samples[m_batch[index].sampleID].g += light_radiance[1] * mis_balance * m_batch[index].weight[1];
+        m_image->samples[m_batch[index].sampleID].b += light_radiance[2] * mis_balance * m_batch[index].weight[2];
+      }
+    }
+
+    return;
+  }
+
+  ShaderInterface* shader = m_scene->shaders[object->shader()]->clone();
+
+  // Compute shader coefficients 
+  {
+    std::vector< float > u(range_size);
+    std::vector< float > v(range_size);
+
+    for(size_t index = 0; index < range_size; ++index)
+    {
+      Vector2f texture;
+      object->texture(
+        m_batch[r.begin() + index].primID,
+        m_batch[r.begin() + index].u,
+        m_batch[r.begin() + index].v,
+        &texture
+        );
+
+      u[index] = texture[0];
+      v[index] = texture[1];
+    }
+
+    shader->initialize(range_size, u, v, texture_system);
+  }
+
+  // Next event estimation
+  {
+    RayUncompressed shadow_ray;
+    shadow_ray.tnear = 0.001f;
+    shadow_ray.tfar = 100000.f;
+    shadow_ray.geomID = RTC_INVALID_GEOMETRY_ID;
+    shadow_ray.primID = RTC_INVALID_GEOMETRY_ID;
+    shadow_ray.instID = RTC_INVALID_GEOMETRY_ID;
+    shadow_ray.time = 0.f;
+    shadow_ray.mask = 0x0FFFFFFF;
+
+    // Loop through the group
+    for(size_t index = r.begin(); index < r.end(); ++index)
+    {
+      size_t colour_index = index - r.begin();
+
+      size_t ligt_identifier = size_t(light_count * random.sample());
+      LightInterface* light = m_scene->lights[ligt_identifier].get();
+
+      Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
+      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
+      Vector3f normal = Vector3f(m_batch[index].Ng[0], m_batch[index].Ng[1], m_batch[index].Ng[2]).normalized() * -1.f;
+      Vector3f position = ray_origin + ray_direction * m_batch[index].tfar;
+      Vector3f output_dir = ray_direction * -1.f;
+      Vector3f input_dir;
+
+
+      Colour3f light_radiance;
+      float light_pdfw;
+      float distance;
+
+      light->illuminate(&random, position, &input_dir, &distance, &light_radiance, &light_pdfw);
+
+      if(light_radiance.matrix().norm() > M_EPSILON)
+      {
+        Colour3f bsdf_weight;
+        float bsdf_pdfw;
+        float cos_theta;
+
+        shader->evaluate(colour_index, input_dir, output_dir, normal, &bsdf_weight, &cos_theta, &bsdf_pdfw);
+
+        if(bsdf_weight.matrix().norm() > M_EPSILON)
+        {
+          float mis_balance = misTwo(light_pdfw * light_pick_probability, bsdf_pdfw);
+          // mis_balance = 0.5f;
+
+          Colour3f contribution = (mis_balance * cos_theta / (light_pdfw * light_pick_probability)) * (light_radiance * bsdf_weight);
+
+          RayUncompressed occlusion_test = shadow_ray;
+          occlusion_test.org[0] = position[0];
+          occlusion_test.org[1] = position[1];
+          occlusion_test.org[2] = position[2];
+          occlusion_test.dir[0] = input_dir[0];
+          occlusion_test.dir[1] = input_dir[1];
+          occlusion_test.dir[2] = input_dir[2];
+          rtcIntersect(m_scene->rtc_scene, occlusion_test.rtc_ray);
+
+          if(distance < occlusion_test.tfar)
+          {
+            m_image->samples[m_batch[index].sampleID].r += contribution[0] * m_batch[index].weight[0];
+            m_image->samples[m_batch[index].sampleID].g += contribution[1] * m_batch[index].weight[1];
+            m_image->samples[m_batch[index].sampleID].b += contribution[2] * m_batch[index].weight[2];
+          }
+        }
+      }
     }
   }
+
+  // Continue random walk
+  {
+    for(size_t index = r.begin(); index < r.end(); ++index)
+    {
+      size_t colour_index = index - r.begin();
+
+      if(m_batch[index].rayDepth > 2)
+        continue;
+
+      Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
+      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
+      Vector3f normal = Vector3f(m_batch[index].Ng[0], m_batch[index].Ng[1], m_batch[index].Ng[2]).normalized() * -1.f;
+      Vector3f position = ray_origin + ray_direction * m_batch[index].tfar;
+      Vector3f output_dir = ray_direction * -1.f;
+      Vector3f input_dir;
+
+      Colour3f bsdf_weight;
+      float bsdf_pdfw;
+      float cos_theta;
+
+      shader->sample(&random, colour_index, output_dir, normal, &input_dir, &bsdf_weight, &cos_theta, &bsdf_pdfw);
+
+      RayCompressed input_ray;
+      input_ray.org[0] = position[0];
+      input_ray.org[1] = position[1];
+      input_ray.org[2] = position[2];
+      input_ray.dir[0] = input_dir[0];
+      input_ray.dir[1] = input_dir[1];
+      input_ray.dir[2] = input_dir[2];
+      input_ray.weight[0] = m_batch[index].weight[0] * bsdf_weight[0] * (cos_theta / bsdf_pdfw);
+      input_ray.weight[1] = m_batch[index].weight[1] * bsdf_weight[1] * (cos_theta / bsdf_pdfw);
+      input_ray.weight[2] = m_batch[index].weight[2] * bsdf_weight[2] * (cos_theta / bsdf_pdfw);
+      input_ray.lastPdf = bsdf_pdfw;
+      input_ray.rayDepth = m_batch[index].rayDepth + 1;
+      input_ray.sampleID = m_batch[index].sampleID;
+
+      int max = (fabs(input_ray.dir[0]) < fabs(input_ray.dir[1])) ? 1 : 0;
+      int axis = (fabs(input_ray.dir[max]) < fabs(input_ray.dir[2])) ? 2 : max;
+      int cardinal = (input_ray.dir[axis] < 0.f) ? axis : axis + 3;
+
+      m_buffer.direction[cardinal].push_back(input_ray);
+    }
+  }
+
+  for(size_t index = 0; index < 6; ++index)
+  {
+    if(m_buffer.direction[index].size() > 0)
+      m_bins->add(m_buffer.direction[index].size(), index, &(m_buffer.direction[index][0]), m_batch_queue);
+  }
+
+  delete shader;
 }
 
 MSC_NAMESPACE_END

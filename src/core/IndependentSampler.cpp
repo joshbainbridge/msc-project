@@ -8,8 +8,8 @@ void IndependentSampler::sample(const int _base, RandomGenerator* _random, float
   {
     for(size_t index_y = 0; index_y < _base; ++index_y)
     {
-      _output[2 * (index_y + index_x * _base) + 0] = _random->getSample();
-      _output[2 * (index_y + index_x * _base) + 1] = _random->getSample();
+      _output[2 * (index_y + index_x * _base) + 0] = _random->sample();
+      _output[2 * (index_y + index_x * _base) + 1] = _random->sample();
     }
   }
 }

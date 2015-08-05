@@ -91,6 +91,11 @@ public:
   void focalDistance(const float _focal_distance){m_focal_distance = _focal_distance;}
 
   /**
+   * @brief      Precomputes transform
+   */
+  void construct();
+
+  /**
    * @brief      Creates primary rays from camera
    *
    * @param[in]  _count      sample count to process
@@ -106,6 +111,9 @@ private:
   float m_focal_length;
   float m_aperture;
   float m_focal_distance;
+
+  Affine3f m_transform;
+  Vector3f m_normal;
 
   Vector2f rejectionSampling(RandomGenerator* _random) const;
 };
@@ -138,6 +146,9 @@ template<> struct convert<msc::ThinLensCamera>
     rhs.focalLength(node["focal length"].as<float>());
     rhs.focalDistance(node["focal distance"].as<float>());
     rhs.aperture(node["aperture"].as<float>());
+
+    rhs.construct();
+    
     return true;
   }
 };

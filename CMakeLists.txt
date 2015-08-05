@@ -28,6 +28,7 @@ SET( CORE_SOURCES
   ${SRC}/core/RayIntersect.cpp
   ${SRC}/core/RayDecompress.cpp
   ${SRC}/core/RayBoundingbox.cpp
+  ${SRC}/core/PolygonObject.cpp
   ${SRC}/core/LambertShader.cpp
   ${SRC}/core/NullShader.cpp
   ${SRC}/core/Convolve.cpp
@@ -65,6 +66,7 @@ SET( CORE_HEADERS
   ${INC}/core/RayIntersect.h
   ${INC}/core/RayDecompress.h
   ${INC}/core/RayBoundingbox.h
+  ${INC}/core/ObjectInterface.h
   ${INC}/core/PolygonObject.h
   ${INC}/core/ShaderInterface.h
   ${INC}/core/NullShader.h

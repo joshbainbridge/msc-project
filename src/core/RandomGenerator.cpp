@@ -3,7 +3,7 @@
 MSC_NAMESPACE_BEGIN
 
 //Generate uniform sample (mutates class)
-float RandomGenerator::getSample()
+float RandomGenerator::sample()
 {
   return m_uniform_dist(m_generator);
 }

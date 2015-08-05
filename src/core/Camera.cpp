@@ -20,7 +20,15 @@ void Camera::operator()(const tbb::blocked_range2d< size_t > &r) const
 
       for(size_t index = 0; index < count; ++index)
       {
+        rays[index].weight[0] = 1.f;
+        rays[index].weight[1] = 1.f;
+        rays[index].weight[2] = 1.f;
+        rays[index].lastPdf = 1.f;
+        rays[index].rayDepth = 0;
         rays[index].sampleID = (index_x * m_image->height * count) + (index_y * count) + index;
+        m_image->samples[rays[index].sampleID].r = 0.f;
+        m_image->samples[rays[index].sampleID].g = 0.f;
+        m_image->samples[rays[index].sampleID].b = 0.f;
         m_image->samples[rays[index].sampleID].x = index_x + samples[2 * index + 0];
         m_image->samples[rays[index].sampleID].y = index_y + samples[2 * index + 1];
         samples[2 * index + 0] = (((index_x + samples[2 * index + 0]) * 2.f - m_image->width) / m_image->width) * 36.f;

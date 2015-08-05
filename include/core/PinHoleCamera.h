@@ -61,6 +61,11 @@ public:
   void focalLength(const float _focal_length){m_focal_length = _focal_length;}
 
   /**
+   * @brief      Precomputes transform
+   */
+  void construct();
+
+  /**
    * @brief      Creates primary rays from camera
    *
    * @param[in]  _count      sample count to process
@@ -74,6 +79,9 @@ private:
   Vector3f m_translation;
   Vector3f m_rotation;
   float m_focal_length;
+
+  Affine3f m_transform;
+  Vector3f m_normal;
 };
 
 MSC_NAMESPACE_END
@@ -100,6 +108,9 @@ template<> struct convert<msc::PinHoleCamera>
     rhs.translation(node["translation"].as<msc::Vector3f>());
     rhs.rotation(node["rotation"].as<msc::Vector3f>());
     rhs.focalLength(node["focal length"].as<float>());
+
+    rhs.construct();
+    
     return true;
   }
 };

@@ -20,7 +20,12 @@ public:
    *
    * @return     random number
    */
-  float getSample();
+  float sample();
+
+  /**
+   * @brief      Overload so that class can be used with std::generate
+   */
+  inline float operator()(){return this->sample();}
 
 private:
   boost::mt19937 m_generator;

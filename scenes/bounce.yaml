@@ -16,8 +16,8 @@ settings:
 
 camera:
   type: ThinLens
-  translation: [ 0, 120, 1000 ]
-  rotation: [ 0, 90, -3 ]
+  translation: [ -1000, 120, -100 ]
+  rotation: [ 0, 0, -3 ]
   focal length: 150
   focal distance: 990
   aperture: 5.6
@@ -56,16 +56,16 @@ shader:
   colour: [ 0.6, 0.6, 0.6 ]
   texture: "scenes/textures/floor_pattern.tx"
 
-light:
-  type: Quad
-  translation: [ 200, 100, 200 ]
-  rotation: [ 0, 135, 0 ]
-  scale: [ 50, 50 ]
-  intensity: 5
+# light:
+#   type: Quad
+#   translation: [ 200, 100, 200 ]
+#   rotation: [ 0, 135, 0 ]
+#   scale: [ 50, 50 ]
+#   intensity: 5
 
 light:
   type: Quad
-  translation: [ -100, 100, -100 ]
-  rotation: [ 0, -45, 0 ]
+  translation: [ -100, 100, -190 ]
+  rotation: [ 0, 75, 0 ]
   scale: [ 50, 50 ]
-  intensity: 25
+  intensity: 75

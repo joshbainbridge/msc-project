@@ -14,22 +14,37 @@
 
 MSC_NAMESPACE_BEGIN
 
-template < typename type > bool compare(const type _a, const type _b)
+inline bool compare(const float _a, const float _b)
 {
   return fabs(static_cast<float>(_a) - static_cast<float>(_b)) < M_EPSILON;
 }
 
-template < typename type > void cartesianToSphericalCoord(const type _x, const type _y, const type _z, float *azimuthal, float *polar)
+inline void cartesianToSphericalCoord(const float _x, const float _y, const float _z, float *azimuthal, float *zenith)
 {
-  *polar = atan(_y / _x);
-  *azimuthal = atan(sqrt(_x * _x + _y * _y) / _z);
+  *azimuthal = atan2(_y, _x);
+  *zenith = atan(sqrt((_x * _x) + (_y * _y)) / _z);
 }
 
-template < typename type > void sphericalToCartesianCoord(const type _azimuthal, const type _polar, float *x, float *y, float *z)
+inline void sphericalToCartesianCoord(const float _azimuthal, const float _zenith, float *x, float *y, float *z)
 {
-  *x = cos(_polar) * sin(_azimuthal);
-  *y = sin(_polar) * sin(_azimuthal);
-  *z = cos(_azimuthal);
+  *x = cos(_azimuthal) * sin(_zenith);
+  *y = sin(_azimuthal) * sin(_zenith);
+  *z = cos(_zenith);
+}
+
+inline float areaToAngleProbability(const float _area, const float _distance, const float _cosine)
+{
+  return _area * (_distance * _distance) / abs(_cosine);
+}
+
+inline float angleToAreaProbability(const float _angle, const float _distance, const float _cosine)
+{
+  return _angle * abs(_cosine) / (_distance * _distance);
+}
+
+inline float misTwo(const float _first, const float _second)
+{
+  return (_first / (_first + _second));
 }
 
 template < typename type, int size > struct BoundingBox
@@ -39,12 +54,6 @@ template < typename type, int size > struct BoundingBox
 };
 
 typedef BoundingBox< float, 3 > BoundingBox3f;
-
-// template < typename t_origin, typename t_direction > struct Ray
-// {
-//   t_origin origin;
-//   t_direction dir;
-// };
 
 typedef Eigen::Matrix< float, 2, 1 > Vector2f;
 typedef Eigen::Map< msc::Vector2f > Vector2fMap;
@@ -56,10 +65,6 @@ typedef Eigen::Array< float, 3, 1 > Colour3f;
 typedef Eigen::Map< msc::Colour3f > Colour3fMap;
 
 typedef Eigen::Transform< float, 3, Eigen::Affine > Affine3f;
-
-// typedef Ray< Vector2f, Vector2f > Ray2f;
-// typedef Ray< Vector3f, Vector3f > Ray3f;
-// typedef Ray< Vector4f, Vector4f > Ray4f;
 
 MSC_NAMESPACE_END
 

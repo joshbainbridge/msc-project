@@ -13,6 +13,9 @@ struct RayCompressed
   float org[3];
   float dir[3];
 
+  float weight[3];
+  float lastPdf;
+  int rayDepth;
   int sampleID;
 };
 

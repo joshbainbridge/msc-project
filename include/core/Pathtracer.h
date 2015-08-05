@@ -71,6 +71,7 @@ private:
   bool batchLoading(BatchItem* batch_info);
   void fileLoading(const BatchItem& batch_info, RayCompressed* batch_compressed);
   void rayDecompressing(const BatchItem& batch_info, RayCompressed* batch_compressed, RayUncompressed* batch_uncompressed);
+  void raySorting(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void sceneTraversal(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void hitPointSorting(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
   void surfaceShading(const BatchItem& batch_info, RayUncompressed* batch_uncompressed);
