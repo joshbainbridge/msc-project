@@ -31,7 +31,6 @@ DirectionalBins::~DirectionalBins()
   {
     m_bin[index].outfile.close();
     boost::filesystem::remove(m_bin[index].path);
-    std::cout << m_bin[index].path << std::endl;
   }
 }
 
@@ -43,6 +42,7 @@ void DirectionalBins::add(const int _size, const int _cardinal, RayCompressed* _
 
   if(m_bin[_cardinal].size + _size > file_size)
   {
+    std::cout << pow(2, m_exponent) << ", " << m_bin[_cardinal].size << std::endl;
     m_bin[_cardinal].outfile.close();
 
     BatchItem batch;
@@ -78,6 +78,7 @@ void DirectionalBins::flush(tbb::concurrent_queue< BatchItem >* _batch_queue)
   {
     if(m_bin[index].size > 0)
     {
+      std::cout << pow(2, m_exponent) << ", " << m_bin[index].size << std::endl;
       m_bin[index].outfile.close();
       
       BatchItem batch;
@@ -101,6 +102,8 @@ void DirectionalBins::flush(tbb::concurrent_queue< BatchItem >* _batch_queue)
       m_bin[index].outfile.open(params);
       m_bin[index].pointer = (RayCompressed*)(m_bin[index].outfile.data());
       m_bin[index].end = m_bin[index].pointer + file_size;
+
+      break;
     }
   }
 }

@@ -41,6 +41,7 @@ void Pathtracer::construct(const std::string &_filename)
     image->width = 700;
     image->height = 500;
     image->base = 8;
+    image->depth = 2;
     image->iteration = 0;
 
     if(node_setup["image"])
@@ -64,7 +65,6 @@ void Pathtracer::construct(const std::string &_filename)
   {
     Settings* settings = new Settings;
 
-    settings->ray_depth = 4;
     settings->bucket_size = 16;
     settings->shading_size = 4096;
     settings->buffer_exponent = 11;
@@ -270,7 +270,7 @@ void Pathtracer::cameraSampling()
 {
   // Create primary rays from camera
   tbb::parallel_for(
-    tbb::blocked_range2d< size_t >(0, m_image->width, 32, 0, m_image->height, 32),
+    tbb::blocked_range2d< size_t >(0, m_image->width, m_settings->bucket_size, 0, m_image->height, m_settings->bucket_size),
     Camera(m_camera.get(), m_sampler.get(), m_image.get(), m_bins.get(), &m_batch_queue, &m_thread_random_generator),
     tbb::simple_partitioner()
     );
@@ -327,7 +327,7 @@ void Pathtracer::surfaceShading(const BatchItem& batch_info, RayUncompressed* ba
 {
   // Intergrate shading and create secondary rays
   tbb::parallel_for(
-    RangeGeom< RayUncompressed* >(0, batch_info.size, batch_uncompressed),
+    RangeGeom< RayUncompressed* >(0, batch_info.size, m_settings->shading_size, batch_uncompressed),
     Integrator(m_scene.get(), m_image.get(), m_bins.get(), &m_batch_queue, &m_thread_texture_system, &m_thread_random_generator, batch_uncompressed),
     tbb::simple_partitioner()
     );
@@ -337,7 +337,7 @@ void Pathtracer::imageConvolution()
 {
   // Convolve iamge using filter interface
   tbb::parallel_for(
-    tbb::blocked_range2d< size_t >(0, m_image->width, 64, 0, m_image->height, 64),
+    tbb::blocked_range2d< size_t >(0, m_image->width, m_settings->bucket_size, 0, m_image->height, m_settings->bucket_size),
     Convolve(m_filter.get(), m_image.get())
     );
 }
@@ -395,6 +395,9 @@ int Pathtracer::process()
 
   cameraSampling();
 
+  std::cout << "\033[1;32mSample count is " << m_image->base * m_image->base << " samples per pixel.\033[0m" << std::endl;
+  std::cout << "\033[1;32mRay depth is set to " << m_image->depth << " bounces per sample.\033[0m" << std::endl;
+  std::cout << "\033[1;32mImage resolution is " << m_image->width << " by "  << m_image->height << ".\033[0m" << std::endl;
   std::cout << "\033[1;32mCurrent queue holds " << m_batch_queue.unsafe_size() << " batches.\033[0m" << std::endl;
 
   BatchItem pre_batch_info;
@@ -410,6 +413,7 @@ int Pathtracer::process()
 
   while(pre_batch_found)
   {
+    std::cout << m_batch_queue.unsafe_size() << std::endl;
     rayDecompressing(pre_batch_info, batch_compressed, batch_uncompressed);
 
     if(post_batch_found)

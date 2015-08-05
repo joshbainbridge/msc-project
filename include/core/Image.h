@@ -33,6 +33,7 @@ struct Image
   size_t width;
   size_t height;
   size_t base;
+  size_t depth;
   size_t iteration;
 
   std::vector< Sample > samples;
@@ -51,17 +52,19 @@ template<> struct convert<msc::Image>
     node["image"]["width"] = rhs.width;
     node["image"]["height"] = rhs.height;
     node["image"]["sample base"] = rhs.base;
+    node["image"]["ray depth"] = rhs.depth;
     return node;
   }
 
   static bool decode(const Node& node, msc::Image& rhs)
   {
-    if(!node.IsMap() || node.size() != 3)
+    if(!node.IsMap() || node.size() != 4)
       return false;
 
     rhs.width = node["width"].as<int>();
     rhs.height = node["height"].as<int>();
     rhs.base = node["sample base"].as<int>();
+    rhs.depth = node["ray depth"].as<int>();
     rhs.iteration = 0;
     return true;
   }

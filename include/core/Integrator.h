@@ -23,9 +23,10 @@ MSC_NAMESPACE_BEGIN
  */
 template < typename type > class RangeGeom {
 public:
-  RangeGeom(size_t _begin, size_t _end, type _array)
+  RangeGeom(size_t _begin, size_t _end, size_t _grainsize, type _array)
    : m_begin(_begin)
    , m_end(_end)
+   , m_grainsize(_grainsize)
    , m_array(_array)
   {;}
 
@@ -38,6 +39,7 @@ public:
   RangeGeom(RangeGeom &r, tbb::split)
   {
     m_array = r.m_array;
+    m_grainsize = r.m_grainsize;
     m_end = r.m_end;
 
     size_t division = r.m_begin;
@@ -48,7 +50,7 @@ public:
         division = index;
         break;
       }
-      else if((index - r.m_begin) == 4096)
+      else if((index - r.m_begin) == m_grainsize)
       {
         division = index;
         break;
@@ -73,7 +75,7 @@ public:
    */
   bool is_divisible() const
   {
-    return (m_array[m_begin] != m_array[m_end - 1]) || ((m_end - m_begin) > 4096);
+    return (m_array[m_begin] != m_array[m_end - 1]) || ((m_end - m_begin) > m_grainsize);
   }
 
   /**
@@ -95,6 +97,7 @@ public:
 public:
   size_t m_begin;
   size_t m_end;
+  size_t m_grainsize;
   type m_array;
 };
 

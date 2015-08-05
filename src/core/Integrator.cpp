@@ -167,7 +167,7 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
     {
       size_t colour_index = index - r.begin();
 
-      if(m_batch[index].rayDepth > 2)
+      if(m_batch[index].rayDepth >= m_image->depth)
         continue;
 
       Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
