@@ -61,6 +61,11 @@ public:
   bool close();
 
   /**
+   * @brief      Poll for changed events
+   */
+  void poll();
+
+  /**
    * @brief      Set location of image data to be passed onto gpu
    *
    * @param[in]  _image     pointer to image data

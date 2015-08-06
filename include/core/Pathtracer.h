@@ -4,6 +4,7 @@
 #include <string>
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/atomic.hpp>
 #include <tbb/concurrent_queue.h>
 
 #include <core/Common.h>
@@ -46,6 +47,16 @@ public:
   void clear();
 
   /**
+   * @brief      Terminates iteration of image
+   */
+  void terminate();
+
+  /**
+   * @brief      Check if pathtracer is set to terminate
+   */
+  bool active();
+
+  /**
    * @brief      Compute a single iteration of image
    *
    * @return     current itteration count
@@ -65,6 +76,8 @@ private:
   LocalRandomGenerator m_thread_random_generator;
 
   tbb::concurrent_queue< BatchItem > m_batch_queue;
+
+  boost::atomic< bool > m_terminate;
 
   void construct(const std::string &_filename);
   void cameraSampling();

@@ -80,6 +80,50 @@ void commands(const int ac, const char *av[], filesystem::path* input, filesyste
   }
 }
 
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  msc::Pathtracer* pathtracer = static_cast<msc::Pathtracer*>(glfwGetWindowUserPointer(window));
+
+  if(action == GLFW_PRESS)
+  {
+    switch(key)
+    {
+      case GLFW_KEY_ESCAPE:
+        pathtracer->terminate();
+        break;
+    }
+  }
+}
+
+void closeCallback(GLFWwindow* window)
+{
+  msc::Pathtracer* pathtracer = static_cast<msc::Pathtracer*>(glfwGetWindowUserPointer(window));
+  pathtracer->terminate();
+}
+
+void compute(msc::Pathtracer* pathtracer, size_t* iteration)
+{
+  boost::chrono::milliseconds iteration_second( 1000 / 30 );
+
+  while(pathtracer->active())
+  {
+    boost::chrono::high_resolution_clock::time_point timer_start = boost::chrono::high_resolution_clock::now();
+
+    *iteration = pathtracer->process();
+
+    if(*iteration == 0)
+      break;
+
+    std::cout << "\033[1;31mIteration " << *iteration << " is complete.\033[0m" << std::endl;
+
+    boost::chrono::high_resolution_clock::time_point timer_end = boost::chrono::high_resolution_clock::now();
+    boost::chrono::milliseconds iteration_time(boost::chrono::duration_cast<boost::chrono::milliseconds>
+      (timer_end - timer_start).count());
+    if(iteration_time < iteration_second)
+      boost::this_thread::sleep_for(iteration_second - iteration_time);
+  }
+}
+
 int main(int argc, const char *argv[])
 {
   filesystem::path input_file;
@@ -88,79 +132,76 @@ int main(int argc, const char *argv[])
   commands(argc, argv, &input_file, &output_file);
 
   float* image_pointer;
-  int width;
-  int height;
+  int width, height;
 
   msc::Pathtracer* pathtracer = new msc::Pathtracer(input_file.string());
   pathtracer->image(&image_pointer, &width, &height);
 
-  // pathtracer process here...
-  size_t iteration = pathtracer->process();
+  size_t pixel_count = width * height;
 
   if(output_file.empty())
   {
     frm::Framebuffer* framebuffer = new frm::Framebuffer();
-    framebuffer->init(width, height);
+    GLFWwindow* window = framebuffer->init(width, height, pathtracer);
 
-    size_t pixel_count = width * height;
+    size_t iteration = 0;
+    size_t check_it = 0;
+
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetWindowCloseCallback(window, closeCallback);
+
+    framebuffer->bind();
+    framebuffer->poll();
+
     unsigned char* image = new unsigned char[pixel_count * 3];
 
-    for(size_t i = 0; i < pixel_count; ++i)
-    {
-      image[3 * i + 0] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 0] / iteration) * 255.f);
-      image[3 * i + 1] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 1] / iteration) * 255.f);
-      image[3 * i + 2] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 2] / iteration) * 255.f);
-    }
+    boost::thread computation = boost::thread(&compute, pathtracer, &iteration);
 
-    framebuffer->image(image, width, height);
-    framebuffer->bind();
+    boost::chrono::milliseconds iteration_second( 1000 / 30 );
 
-    boost::chrono::milliseconds iteration_second( 1000 / 60 );
-
-    while(!framebuffer->close())
+    while(pathtracer->active())
     {
       boost::chrono::high_resolution_clock::time_point timer_start = boost::chrono::high_resolution_clock::now();
-      
-      framebuffer->draw();
 
-      std::cout << "\033[1;31mIteration " << iteration << " is complete.\033[0m" << std::endl;
-
-      std::string title = "Pathtracer Iteration: " + boost::lexical_cast<std::string>(iteration + 1);
-      framebuffer->title(title);
-
-      // pathtracer iterate process here...
-      iteration = pathtracer->process();
-
-      for(size_t i = 0; i < pixel_count; ++i)
+      if(check_it != iteration)
       {
-        image[3 * i + 0] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 0] / iteration) * 255.f);
-        image[3 * i + 1] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 1] / iteration) * 255.f);
-        image[3 * i + 2] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 2] / iteration) * 255.f);
+        check_it = iteration;
+        for(size_t i = 0; i < pixel_count; ++i)
+        {
+          image[3 * i + 0] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 0] / iteration) * 255.f);
+          image[3 * i + 1] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 1] / iteration) * 255.f);
+          image[3 * i + 2] = static_cast<unsigned char>(std::min(1.f, image_pointer[3 * i + 2] / iteration) * 255.f);
+        }
+
+        std::string title = "Pathtracer Iteration: " + boost::lexical_cast<std::string>(iteration);
+
+        framebuffer->title(title);
+        framebuffer->image(image, width, height);
       }
 
-      framebuffer->image(image, width, height);
+      framebuffer->draw();
+      framebuffer->poll();
 
       boost::chrono::high_resolution_clock::time_point timer_end = boost::chrono::high_resolution_clock::now();
       boost::chrono::milliseconds iteration_time(boost::chrono::duration_cast<boost::chrono::milliseconds>
         (timer_end - timer_start).count());
       if(iteration_time < iteration_second)
-      {
         boost::this_thread::sleep_for(iteration_second - iteration_time);
-      }
     }
 
+    computation.join();
+  
     delete[] image;
     delete framebuffer;
   }
   else
   {
-    size_t pixel_count = width * height;
+    size_t iteration = pathtracer->process();
+
     Imf::Rgba* image = new Imf::Rgba[pixel_count];
 
     for(size_t i = 0; i < pixel_count; ++i)
-    {
       image[i] = Imf::Rgba(image_pointer[i * 3 + 0], image_pointer[i * 3 + 1], image_pointer[i * 3 + 2], 1.f);
-    }
 
     Imf::RgbaOutputFile* file = new Imf::RgbaOutputFile(output_file.c_str(), width, height, Imf::WRITE_RGBA);
     file->setFrameBuffer(image, 1, width);

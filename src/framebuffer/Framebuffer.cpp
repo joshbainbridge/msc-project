@@ -62,7 +62,6 @@ void Framebuffer::draw()
   glDrawArrays(GL_TRIANGLES, 0, 6);
   
   glfwSwapBuffers(m_window);
-  glfwPollEvents();
 
   if(m_update)
   {
@@ -77,6 +76,10 @@ bool Framebuffer::close()
   return glfwWindowShouldClose(m_window);
 }
 
+void Framebuffer::poll()
+{
+  glfwPollEvents();
+}
 
 void Framebuffer::image(const unsigned char* _image, const int _resolution_x, const int _resolution_y)
 {
@@ -186,7 +189,7 @@ void Framebuffer::createContext()
   glfwWindowHint(GLFW_SAMPLES, 2);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   
-  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Pathtracer Iteration: 1", NULL, NULL);
+  m_window = glfwCreateWindow(m_resolution_x, m_resolution_y, "Pathtracer Iteration: 0", NULL, NULL);
 
   glfwMakeContextCurrent(m_window);
   glfwSwapInterval(true);

@@ -351,12 +351,17 @@ Pathtracer::Pathtracer(const std::string &_filename)
   LocalTextureSystem m_thread_texture_system(nullTextureSystem);
 
   construct(_filename);
+  m_terminate = false;
 }
 
 Pathtracer::~Pathtracer()
 {
   for(LocalTextureSystem::const_iterator it = m_thread_texture_system.begin(); it != m_thread_texture_system.end();  ++it)
     OpenImageIO::TextureSystem::destroy(*it, false);
+
+  BatchItem batch_info;
+  while(m_batch_queue.try_pop(batch_info))
+    boost::filesystem::remove(batch_info.filename);
 
   rtcDeleteScene(m_scene->rtc_scene);
   rtcExit();
@@ -383,10 +388,18 @@ void Pathtracer::clear()
   m_image->iteration = 0;
 }
 
+void Pathtracer::terminate()
+{
+  m_terminate = true;
+}
+
+bool Pathtracer::active()
+{
+  return !m_terminate;
+}
+
 int Pathtracer::process()
 {
-  tbb::task_scheduler_init init(1);
-
   m_bins.reset(new DirectionalBins(m_settings->bin_exponent));
 
   size_t bin_size = pow(2, m_settings->bin_exponent);
@@ -411,7 +424,7 @@ int Pathtracer::process()
 
   boost::thread loading_thread;
 
-  while(pre_batch_found)
+  while(pre_batch_found && !m_terminate)
   {
     std::cout << m_batch_queue.unsafe_size() << std::endl;
     rayDecompressing(pre_batch_info, batch_compressed, batch_uncompressed);
@@ -439,6 +452,15 @@ int Pathtracer::process()
 
   delete[] batch_uncompressed;
   delete[] batch_compressed;
+  
+  if(pre_batch_found)
+    boost::filesystem::remove(pre_batch_info.filename);
+  
+  if(post_batch_found)
+    boost::filesystem::remove(post_batch_info.filename);
+
+  if(m_terminate)
+    return 0;
 
   imageConvolution();
 
