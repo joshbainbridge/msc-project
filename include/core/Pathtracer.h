@@ -47,14 +47,14 @@ public:
   void clear();
 
   /**
-   * @brief      Terminates iteration of image
-   */
-  void terminate();
-
-  /**
    * @brief      Check if pathtracer is set to terminate
    */
   bool active();
+
+  /**
+   * @brief      Sets pathtracer to terminate iteration
+   */
+  void terminate();
 
   /**
    * @brief      Compute a single iteration of image

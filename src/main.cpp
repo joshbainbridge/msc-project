@@ -155,7 +155,7 @@ int main(int argc, const char *argv[])
 
     unsigned char* image = new unsigned char[pixel_count * 3];
 
-    boost::thread computation = boost::thread(&compute, pathtracer, &iteration);
+    boost::thread compute_thread = boost::thread(&compute, pathtracer, &iteration);
 
     boost::chrono::milliseconds iteration_second( 1000 / 30 );
 
@@ -189,7 +189,7 @@ int main(int argc, const char *argv[])
         boost::this_thread::sleep_for(iteration_second - iteration_time);
     }
 
-    computation.join();
+    compute_thread.join();
   
     delete[] image;
     delete framebuffer;

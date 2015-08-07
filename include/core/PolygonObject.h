@@ -3,11 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <tinyobjloader/tiny_obj_loader.h>
 
 #include <core/Common.h>
 #include <core/ObjectInterface.h>
+#include <core/Singleton.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -177,7 +179,8 @@ template<> struct convert<msc::PolygonObject>
     if(!node.IsMap() || node.size() != 6)
       return false;
 
-    rhs.filename(node["filename"].as<std::string>());
+    msc::SingletonString& scene_root = msc::SingletonString::instance();
+    rhs.filename(scene_root.getData().append("/").append(node["filename"].as<std::string>()));
     rhs.translation(node["translation"].as<msc::Vector3f>());
     rhs.rotation(node["rotation"].as<msc::Vector3f>());
     rhs.scale(node["scale"].as<msc::Vector3f>());

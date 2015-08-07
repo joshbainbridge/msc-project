@@ -5,6 +5,7 @@
 
 #include <core/Common.h>
 #include <core/ShaderInterface.h>
+#include <core/Singleton.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -134,8 +135,10 @@ template<> struct convert<msc::LambertShader>
     if(!node.IsMap() || node.size() != 3)
       return false;
 
+    msc::SingletonString& scene_root = msc::SingletonString::instance();
+    rhs.texture(scene_root.getData().append("/").append(node["texture"].as<std::string>()));
     rhs.colour(node["colour"].as<msc::Colour3f>());
-    rhs.texture(node["texture"].as<std::string>());
+
     return true;
   }
 };

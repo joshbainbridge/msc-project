@@ -73,6 +73,7 @@ SET( CORE_HEADERS
   ${INC}/core/LambertShader.h
   ${INC}/core/BatchItem.h
   ${INC}/core/Convolve.h
+  ${INC}/core/Singleton.h
   )
 
 SET( FRM_SOURCES

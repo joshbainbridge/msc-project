@@ -25,6 +25,7 @@
 #include <core/Convolve.h>
 #include <core/Camera.h>
 #include <core/Integrator.h>
+#include <core/Singleton.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -34,6 +35,12 @@ void Pathtracer::construct(const std::string &_filename)
 
   YAML::Node node_setup = node_root[0];
   YAML::Node node_scene = node_root[1];
+
+  boost::filesystem::path path(_filename);
+  boost::filesystem::path dir = path.parent_path();
+
+  SingletonString& scene_root = SingletonString::instance();
+  scene_root.setData(dir.string());
 
   {
     Image* image = new Image;
@@ -388,14 +395,14 @@ void Pathtracer::clear()
   m_image->iteration = 0;
 }
 
-void Pathtracer::terminate()
-{
-  m_terminate = true;
-}
-
 bool Pathtracer::active()
 {
   return !m_terminate;
+}
+
+void Pathtracer::terminate()
+{
+  m_terminate = true;
 }
 
 int Pathtracer::process()
