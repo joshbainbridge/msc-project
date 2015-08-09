@@ -57,7 +57,7 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       }
       // mis_balance = 0.5f;
 
-      if(light_radiance.matrix().norm() > M_EPSILON)
+      if(light_radiance.matrix().maxCoeff() > M_EPSILON)
       {
         // Add light radiance to samples
         m_image->samples[m_batch[index].sampleID].r += light_radiance[0] * mis_balance * m_batch[index].weight[0];
@@ -119,14 +119,13 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       Vector3f output_dir = ray_direction * -1.f;
       Vector3f input_dir;
 
-
       Colour3f light_radiance;
       float light_pdfw;
       float distance;
 
       light->illuminate(&random, position, &input_dir, &distance, &light_radiance, &light_pdfw);
 
-      if(light_radiance.matrix().norm() > M_EPSILON)
+      if(light_radiance.matrix().maxCoeff() > M_EPSILON)
       {
         Colour3f bsdf_weight;
         float bsdf_pdfw;
@@ -134,7 +133,7 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
 
         shader->evaluate(colour_index, input_dir, output_dir, normal, &bsdf_weight, &cos_theta, &bsdf_pdfw);
 
-        if(bsdf_weight.matrix().norm() > M_EPSILON)
+        if(bsdf_weight.matrix().maxCoeff() > M_EPSILON)
         {
           float mis_balance = misTwo(light_pdfw * light_pick_probability, bsdf_pdfw);
           // mis_balance = 0.5f;
@@ -165,10 +164,19 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
   {
     for(size_t index = r.begin(); index < r.end(); ++index)
     {
-      size_t colour_index = index - r.begin();
-
-      if(m_batch[index].rayDepth >= m_image->depth)
+      if(m_batch[index].rayDepth >= m_settings->max_depth)
         continue;
+
+      float tentative_contrib = shader->continuation();
+      float cont_probability = fmin(1.f, tentative_contrib / m_settings->threshold);
+
+      if(m_batch[index].rayDepth < m_settings->min_depth)
+        cont_probability = 1.f;
+
+      if(random.sample() > cont_probability)
+        continue;
+
+      size_t colour_index = index - r.begin();
 
       Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
       Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
@@ -190,9 +198,9 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       input_ray.dir[0] = input_dir[0];
       input_ray.dir[1] = input_dir[1];
       input_ray.dir[2] = input_dir[2];
-      input_ray.weight[0] = m_batch[index].weight[0] * bsdf_weight[0] * (cos_theta / bsdf_pdfw);
-      input_ray.weight[1] = m_batch[index].weight[1] * bsdf_weight[1] * (cos_theta / bsdf_pdfw);
-      input_ray.weight[2] = m_batch[index].weight[2] * bsdf_weight[2] * (cos_theta / bsdf_pdfw);
+      input_ray.weight[0] = m_batch[index].weight[0] * bsdf_weight[0] * (cos_theta / bsdf_pdfw) / cont_probability;
+      input_ray.weight[1] = m_batch[index].weight[1] * bsdf_weight[1] * (cos_theta / bsdf_pdfw) / cont_probability;
+      input_ray.weight[2] = m_batch[index].weight[2] * bsdf_weight[2] * (cos_theta / bsdf_pdfw) / cont_probability;
       input_ray.lastPdf = bsdf_pdfw;
       input_ray.rayDepth = m_batch[index].rayDepth + 1;
       input_ray.sampleID = m_batch[index].sampleID;

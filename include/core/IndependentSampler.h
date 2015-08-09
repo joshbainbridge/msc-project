@@ -29,13 +29,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::IndependentSampler>
 {
-  static Node encode(const msc::IndependentSampler& rhs)
-  {
-    Node node;
-    node["sampler"]["type"] = "Independent";
-    return node;
-  }
-
   static bool decode(const Node& node, msc::IndependentSampler& rhs)
   {
     if(!node.IsMap() || node.size() != 1)

@@ -163,17 +163,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::PolygonObject>
 {
-  static Node encode(const msc::PolygonObject& rhs)
-  {
-    Node node;
-    node["object"]["filename"] = rhs.filename();
-    node["object"]["translation"] = rhs.translation();
-    node["object"]["rotation"] = rhs.rotation();
-    node["object"]["scale"] = rhs.scale();
-    node["object"]["shader"] = rhs.shader();
-    return node;
-  }
-
   static bool decode(const Node& node, msc::PolygonObject& rhs)
   {
     if(!node.IsMap() || node.size() != 6)

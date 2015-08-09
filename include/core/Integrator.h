@@ -9,6 +9,7 @@
 #include <core/DirectionalBins.h>
 #include <core/Scene.h>
 #include <core/Image.h>
+#include <core/Settings.h>
 #include <core/BatchItem.h>
 #include <core/RayUncompressed.h>
 #include <core/RayCompressed.h>
@@ -110,6 +111,7 @@ public:
   Integrator(
     Scene* _scene,
     Image* _image,
+    Settings* _settings,
     DirectionalBins* _bins,
     tbb::concurrent_queue< BatchItem >* _batch_queue,
     LocalTextureSystem* _local_thread_storage_texture,
@@ -118,11 +120,12 @@ public:
     )
    : m_scene(_scene)
    , m_image(_image)
-   , m_batch(_batch)
+   , m_settings(_settings)
    , m_bins(_bins)
    , m_batch_queue(_batch_queue)
    , m_local_thread_storage_texture(_local_thread_storage_texture)
    , m_local_thread_storage_random(_local_thread_storage_random)
+   , m_batch(_batch)
   {;}
 
   /**
@@ -135,12 +138,14 @@ public:
 private:
   Scene* m_scene;
   Image* m_image;
-  RayUncompressed* m_batch;
+  Settings* m_settings;
 
   DirectionalBins* m_bins;
   tbb::concurrent_queue< BatchItem >* m_batch_queue;
   LocalTextureSystem* m_local_thread_storage_texture;
   LocalRandomGenerator* m_local_thread_storage_random;
+  
+  RayUncompressed* m_batch;
 
   mutable Buffer m_buffer;
 };

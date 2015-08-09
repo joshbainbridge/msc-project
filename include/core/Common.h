@@ -72,15 +72,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::Vector3f>
 {
-  static Node encode(const msc::Vector3f& rhs)
-  {
-    Node node;
-    node.push_back(rhs.x());
-    node.push_back(rhs.y());
-    node.push_back(rhs.z());
-    return node;
-  }
-
   static bool decode(const Node& node, msc::Vector3f& rhs)
   {
     if(!node.IsSequence() || node.size() != 3)
@@ -97,14 +88,6 @@ template<> struct convert<msc::Vector3f>
 
 template<> struct convert<msc::Vector2f>
 {
-  static Node encode(const msc::Vector2f& rhs)
-  {
-    Node node;
-    node.push_back(rhs.x());
-    node.push_back(rhs.y());
-    return node;
-  }
-
   static bool decode(const Node& node, msc::Vector2f& rhs)
   {
     if(!node.IsSequence() || node.size() != 2)
@@ -120,15 +103,6 @@ template<> struct convert<msc::Vector2f>
 
 template<> struct convert<msc::Colour3f>
 {
-  static Node encode(const msc::Colour3f& rhs)
-  {
-    Node node;
-    node.push_back(rhs[0]);
-    node.push_back(rhs[1]);
-    node.push_back(rhs[2]);
-    return node;
-  }
-
   static bool decode(const Node& node, msc::Colour3f& rhs)
   {
     if(!node.IsSequence() || node.size() != 3)

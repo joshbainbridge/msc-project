@@ -20,7 +20,7 @@ public:
   /**
    * @brief      Create polymorphic copy of derived class
    *
-   * @return     Is safe to have a covariant return type here
+   * @return     is safe to have a covariant return type here
    */
   virtual ShaderInterface* clone() = 0;
 
@@ -33,6 +33,13 @@ public:
     std::vector< float >& _v,
     TextureSystem _texture_system
     ) =0;
+
+  /**
+   * @brief      Get probabilty of bsdf reflectance for russian roulette
+   *
+   * @return     reflectance probabilty
+   */
+  virtual float continuation() const = 0;
 
   /**
    * @brief      Evaluate shader for given input and output directions and differential data

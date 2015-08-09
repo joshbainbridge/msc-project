@@ -45,13 +45,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::BoxFilter>
 {
-  static Node encode(const msc::BoxFilter& rhs)
-  {
-    Node node;
-    node["filter"]["type"] = "Box";
-    return node;
-  }
-
   static bool decode(const Node& node, msc::BoxFilter& rhs)
   {
     if(!node.IsMap() || node.size() != 1)

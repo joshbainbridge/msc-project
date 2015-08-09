@@ -3,9 +3,14 @@
 
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 #include <core/Common.h>
 #include <core/ShaderInterface.h>
-#include <core/Singleton.h>
+#include <core/TextureInterface.h>
+#include <core/StandardTexture.h>
+#include <core/ConstantTexture.h>
+#include <core/LayeredTexture.h>
 
 MSC_NAMESPACE_BEGIN
 
@@ -16,7 +21,7 @@ class LambertShader : public ShaderInterface
 {
 public:
   LambertShader()
-    : m_constant(Colour3f(0.f, 0.f, 0.f))
+    : m_reflectance(1.f)
   {;}
 
   /**
@@ -24,28 +29,28 @@ public:
    *
    * @return     colour coefficient
    */
-  inline Colour3f colour() const {return m_constant;}
+  inline float reflectance() const {return m_reflectance;}
 
   /**
    * @brief      Getter method for texture path
    *
    * @return     texture path as string
    */
-  inline std::string texture() const {return m_texture_string.string();}
+  inline TextureInterface texture() const {return *m_texture;}
 
   /**
    * @brief      Setter method for colour coefficient
    *
    * @param[in]  _colour  colour coefficient
    */
-  inline void colour(const Colour3f _colour){m_constant = _colour;}
+  inline void reflectance(const float _reflectance){m_reflectance = _reflectance;}
 
   /**
    * @brief      Setter method for texture path
    *
    * @param[in]  _colour  texture path as string
    */
-  inline void texture(const std::string _texture){m_texture_string = OpenImageIO::ustring(_texture);}
+  inline void texture(TextureInterface* _texture){m_texture.reset(_texture);}
 
   /**
    * @brief      Create polymorphic copy of derived class
@@ -63,6 +68,13 @@ public:
     std::vector< float >& _v,
     TextureSystem _texture_system
     );
+
+  /**
+   * @brief      Get probabilty of bsdf reflectance for russian roulette
+   *
+   * @return     reflectance probabilty
+   */
+  float continuation() const;
 
   /**
    * @brief      Evaluate shader for given input and output directions and differential data
@@ -109,10 +121,8 @@ public:
     ) const;
 
 private:
-  OpenImageIO::ustring m_texture_string;
-  Colour3f m_constant;
-
-  std::vector< Colour3f > m_colour;
+  boost::shared_ptr< TextureInterface > m_texture;
+  float m_reflectance;
 };
 
 MSC_NAMESPACE_END
@@ -121,23 +131,35 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::LambertShader>
 {
-  static Node encode(const msc::LambertShader& rhs)
-  {
-    Node node;
-    node["shader"]["type"] = "Lambert";
-    node["shader"]["colour"] = rhs.colour();
-    node["shader"]["texture"] = rhs.texture();
-    return node;
-  }
-
   static bool decode(const Node& node, msc::LambertShader& rhs)
   {
     if(!node.IsMap() || node.size() != 3)
       return false;
 
-    msc::SingletonString& scene_root = msc::SingletonString::instance();
-    rhs.texture(scene_root.getData().append("/").append(node["texture"].as<std::string>()));
-    rhs.colour(node["colour"].as<msc::Colour3f>());
+    {
+      if(node["texture"]["type"].as< std::string >() == "Standard")
+      {
+        msc::StandardTexture* standard_texture = new msc::StandardTexture();
+        *standard_texture = node["texture"].as<msc::StandardTexture>();
+        rhs.texture(standard_texture);
+      }
+
+      if(node["texture"]["type"].as< std::string >() == "Constant")
+      {
+        msc::ConstantTexture* constant_texture = new msc::ConstantTexture();
+        *constant_texture = node["texture"].as<msc::ConstantTexture>();
+        rhs.texture(constant_texture);
+      }
+
+      if(node["texture"]["type"].as< std::string >() == "Layered")
+      {
+        msc::LayeredTexture* layered_texture = new msc::LayeredTexture();
+        *layered_texture = node["texture"].as<msc::LayeredTexture>();
+        rhs.texture(layered_texture);
+      }
+    }
+
+    rhs.reflectance(node["reflectance"].as<float>());
 
     return true;
   }

@@ -90,16 +90,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::PinHoleCamera>
 {
-  static Node encode(const msc::PinHoleCamera& rhs)
-  {
-    Node node;
-    node["camera"]["type"] = "PinHole";
-    node["camera"]["translation"] = rhs.translation();
-    node["camera"]["rotation"] = rhs.rotation();
-    node["camera"]["focal length"] = rhs.focalLength();
-    return node;
-  }
-
   static bool decode(const Node& node, msc::PinHoleCamera& rhs)
   {
     if(!node.IsMap() || node.size() != 4)

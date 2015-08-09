@@ -32,6 +32,9 @@ SET( CORE_SOURCES
   ${SRC}/core/LambertShader.cpp
   ${SRC}/core/NullShader.cpp
   ${SRC}/core/Convolve.cpp
+  ${SRC}/core/ConstantTexture.cpp
+  ${SRC}/core/LayeredTexture.cpp
+  ${SRC}/core/StandardTexture.cpp
   )
 
 SET( CORE_HEADERS
@@ -74,6 +77,10 @@ SET( CORE_HEADERS
   ${INC}/core/BatchItem.h
   ${INC}/core/Convolve.h
   ${INC}/core/Singleton.h
+  ${INC}/core/TextureInterface.h
+  ${INC}/core/ConstantTexture.h
+  ${INC}/core/LayeredTexture.h
+  ${INC}/core/StandardTexture.h
   )
 
 SET( FRM_SOURCES

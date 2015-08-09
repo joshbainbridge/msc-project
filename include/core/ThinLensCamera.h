@@ -124,18 +124,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::ThinLensCamera>
 {
-  static Node encode(const msc::ThinLensCamera& rhs)
-  {
-    Node node;
-    node["camera"]["type"] = "ThinLens";
-    node["camera"]["translation"] = rhs.translation();
-    node["camera"]["rotation"] = rhs.rotation();
-    node["camera"]["focal length"] = rhs.focalLength();
-    node["camera"]["focal distance"] = rhs.focalDistance();
-    node["camera"]["aperture"] = rhs.aperture();
-    return node;
-  }
-
   static bool decode(const Node& node, msc::ThinLensCamera& rhs)
   {
     if(!node.IsMap() || node.size() != 6)

@@ -7,7 +7,7 @@
 MSC_NAMESPACE_BEGIN
 
 /**
- * @brief      Inherits from the shader interface and represents a non-cntributing surface
+ * @brief      Inherits from the shader interface and represents a non-contributing surface
  */
 class NullShader : public ShaderInterface
 {
@@ -28,6 +28,13 @@ public:
     std::vector< float >& _v,
     TextureSystem _texture_system
     );
+
+  /**
+   * @brief      Get probabilty of bsdf reflectance for russian roulette
+   *
+   * @return     reflectance probabilty
+   */
+  float continuation() const;
 
   /**
    * @brief      Evaluate shader for given input and output directions and differential data
@@ -80,16 +87,9 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::NullShader>
 {
-  static Node encode(const msc::NullShader& rhs)
-  {
-    Node node;
-    node["shader"]["type"] = "Null";
-    return node;
-  }
-
   static bool decode(const Node& node, msc::NullShader& rhs)
   {
-    if(!node.IsMap() || node.size() != 3)
+    if(!node.IsMap() || node.size() != 1)
       return false;
 
     return true;

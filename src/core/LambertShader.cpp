@@ -1,11 +1,12 @@
 #include <core/LambertShader.h>
-#include <vector>
 
 MSC_NAMESPACE_BEGIN
 
 ShaderInterface* LambertShader::clone()
 {
-  return new LambertShader(*this);
+  LambertShader* shader = new LambertShader(*this);
+  shader->texture(m_texture->clone());
+  return shader;
 }
 
 void LambertShader::initialize(
@@ -15,38 +16,12 @@ void LambertShader::initialize(
   TextureSystem _texture_system
   )
 {
-  if(!m_texture_string.empty())
-  {
-    OpenImageIO::TextureOptions options;
-    options.swrap = OpenImageIO::TextureOptions::WrapPeriodic;
-    options.twrap = OpenImageIO::TextureOptions::WrapPeriodic;
-    std::vector< OpenImageIO::Runflag > runflags(_size, 1);
-    std::vector< float > temp_colour(_size * 3);
-    
-    float nullvalue = 0;
-    _texture_system->texture(
-      m_texture_string,
-      options,
-      &(runflags[0]),
-      0, _size,
-      OpenImageIO::Varying(&(_u[0])), OpenImageIO::Varying(&(_v[0])),
-      OpenImageIO::Uniform(nullvalue), OpenImageIO::Uniform(nullvalue),
-      OpenImageIO::Uniform(nullvalue), OpenImageIO::Uniform(nullvalue),
-      3, &(temp_colour[0])
-      );
+  m_texture->initialize(_size, _u, _v, _texture_system);
+}
 
-    m_colour.resize(_size);
-    Colour3fMap mapped_data(NULL);
-    for(size_t index = 0; index < _size; ++index)
-    {
-      new (&mapped_data) Colour3fMap((float*) &(temp_colour[3 * index + 0]));
-      m_colour[index] = mapped_data * m_constant;
-    }
-  }
-  else
-  {
-    m_colour.resize(_size, m_constant);
-  }
+float LambertShader::continuation() const
+{
+  return m_reflectance;
 }
 
 void LambertShader::evaluate(
@@ -65,7 +40,7 @@ void LambertShader::evaluate(
   if(cos_theta_input < 0.f || cos_theta_output < 0.f)
     *_weight = Colour3f(0.f, 0.f, 0.f);
   else
-    *_weight = m_colour[_colour_index] * M_INV_PI;
+    *_weight = m_texture->colour(_colour_index) * m_reflectance * M_INV_PI;
 
   *_cos_theta = (cos_theta_input < 0.f) ? 0.f : cos_theta_input;
   *_direct_pdfw = *_cos_theta * M_INV_PI;
@@ -92,7 +67,7 @@ void LambertShader::sample(
   Vector3f t = _normal.cross(s).normalized();
 
   *_input = x * t + y * s + z * _normal;
-  *_weight = m_colour[_colour_index] * M_INV_PI;
+  *_weight = m_texture->colour(_colour_index) * m_reflectance * M_INV_PI;
   *_cos_theta = _normal.dot(*_input);
   *_direct_pdfw = *_cos_theta * M_INV_PI;
 }

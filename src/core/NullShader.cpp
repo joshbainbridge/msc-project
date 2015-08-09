@@ -17,6 +17,11 @@ void NullShader::initialize(
   // Nothing to initialize
 }
 
+float NullShader::continuation() const
+{
+  return 1.f;
+}
+
 void NullShader::evaluate(
   const size_t _colour_index,
   const Vector3f& _input,
@@ -27,7 +32,9 @@ void NullShader::evaluate(
   float* _direct_pdfw
   ) const
 {
-  *_weight = Colour3f(0.f);
+  *_weight = Colour3f(0.f, 0.f, 0.f);
+  *_cos_theta = 1.f;
+  *_direct_pdfw = 1.f * M_INV_PI * 0.5f;
 }
 
 void NullShader::sample(
@@ -41,7 +48,9 @@ void NullShader::sample(
   float* _direct_pdfw
   ) const
 {
-  // Nothing to sample
+  *_weight = Colour3f(0.f, 0.f, 0.f);
+  *_cos_theta = 1.f;
+  *_direct_pdfw = 1.f * M_INV_PI * 0.5f;
 }
 
 MSC_NAMESPACE_END

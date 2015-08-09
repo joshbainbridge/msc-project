@@ -29,13 +29,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::GridSampler>
 {
-  static Node encode(const msc::GridSampler& rhs)
-  {
-    Node node;
-    node["sampler"]["type"] = "Grid";
-    return node;
-  }
-
   static bool decode(const Node& node, msc::GridSampler& rhs)
   {
     if(!node.IsMap() || node.size() != 1)

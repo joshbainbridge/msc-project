@@ -146,17 +146,6 @@ YAML_NAMESPACE_BEGIN
 
 template<> struct convert<msc::QuadLight>
 {
-  static Node encode(const msc::QuadLight& rhs)
-  {
-    Node node;
-    node["light"]["type"] = "Quad";
-    node["light"]["translation"] = rhs.translation();
-    node["light"]["rotation"] = rhs.rotation();
-    node["light"]["scale"] = rhs.scale();
-    node["light"]["intensity"] = rhs.intensity();
-    return node;
-  }
-
   static bool decode(const Node& node, msc::QuadLight& rhs)
   {
     if(!node.IsMap() || node.size() != 5)
