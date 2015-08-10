@@ -8,10 +8,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the camera interface and represents a pin hole camera
+ * 
+ * The PinHoleCamera creates a perspective projection through an infinitely small hole and does not
+ * take into account depth of field. The sample method takes a range of samples from a single pixel
+ * to improve performance.
  */
 class PinHoleCamera : public CameraInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   PinHoleCamera()
     : m_translation(Vector3f(0.f, 0.f, 0.f))
     , m_rotation(Vector3f(0.f, 0.f, 0.f))

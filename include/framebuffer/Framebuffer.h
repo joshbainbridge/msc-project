@@ -12,10 +12,17 @@ FRM_NAMESPACE_BEGIN
 
 /**
  * @brief      Generic framebuffer for visualizing images
+ * 
+ * Framebuffer that uses OpenGL and GLFW to visualize images. It will take a void pointer to data
+ * that can then be acceded within key callbacks externally. If a void pointer is not passed then
+ * default input is used. 
  */
 class Framebuffer
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   Framebuffer()
     : m_update(true)
     , m_pan(false)
@@ -30,6 +37,9 @@ public:
     , m_scale(1.f)
   {;}
 
+  /**
+   * @brief      Class destructor for deleting buffers and destroying window
+   */
   ~Framebuffer();
 
   /**
@@ -37,19 +47,19 @@ public:
    *
    * @param[in]  _resx        buffers horizontal resolution
    * @param[in]  _resy        buffers vertical resolution
-   * @param      _input_data  optional void pointer to class for overriding default key callback
+   * @param      _input_data  optional void pointer to class for mutation when using external callback
    *
-   * @return     window to be passed to key callback overloading class
+   * @return     window pointer to be used to set external key callbacks
    */
   GLFWwindow* init(const int _resx, const int _resy, void* _input_data = NULL);
 
   /**
-   * @brief      bind data before drawing in case of use with other contexts
+   * @brief      Bind data before drawing in case of use with other contexts
    */
   void bind();
 
   /**
-   * @brief      draw image to framebuffer
+   * @brief      Draw image to framebuffer
    */
   void draw();
 

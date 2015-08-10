@@ -11,10 +11,16 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Functor class to decompress an array of rays
+ * 
+ * This class acts as a functor to decompress ray batches so that they can be sorted and traced
+ * in a parallel manner using tbb.
  */
 class RayDecompress
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   RayDecompress(RayCompressed* _input, RayUncompressed* _output)
    : m_input(_input)
    , m_output(_output)

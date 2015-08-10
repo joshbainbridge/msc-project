@@ -8,11 +8,13 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the sampler interface and represents an independent sampler function
+ * 
+ * This will produce samples across the pixel area in a stochastic fasion with no dependence on
+ * other sample poitions.
  */
 class IndependentSampler : public SamplerInterface
 {
 public:
-  
   /**
    * @brief      Create random and independent samples across pixel area
    *

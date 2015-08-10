@@ -15,10 +15,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the object interface and represents polygon geometry
+ * 
+ * This is polygon geometric type and store local geometry data such as positions, normals, texture
+ * coordinates and face indices. It also allows access to this data based upon a primitive
+ * identification number and some barycentric coordinates.
  */
 class PolygonObject : public ObjectInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   PolygonObject()
     : m_translation(Vector3f(0.f, 0.f, 0.f))
     , m_rotation(Vector3f(0.f, 0.f, 0.f))

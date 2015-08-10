@@ -25,11 +25,27 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Rendering engine and interface to external programs
+ * 
+ * Central class of system exposing main access to external application. It implements each part
+ * of the paper in a series of parallel and concurrent operations. Batch processing is done for
+ * example while loading new data into a buffer from disk to avoid thread downtime. The system
+ * can also render multiple images and combine the results iteratively for fast feedback or produce
+ * images more efficiently using larger sample counts. Processing can also be queried and terminated
+ * externally through the public methods.
  */
 class Pathtracer
 {
 public:
+  /**
+   * @brief      This constructor will construct the scene and initialise libraries
+   *
+   * @param[in]  _filename  file path to the scene description file
+   */
   Pathtracer(const std::string &_filename);
+
+  /**
+   * @brief      The destructor will delete any files currently on the batch queue and close the cache
+   */
   ~Pathtracer();
 
   /**

@@ -10,11 +10,13 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Holds local rays as they are produced to minimise thread contention
+ * 
+ * Local thread buffer that will collect rays into six directional std::vectors during camera
+ * sampling or surface shading. When a camera bucket or shading surface is finished, these will
+ * then be loaded into the shared and memory mapped files.
  */
 struct Buffer
 {
-  // size_t size;
-  // size_t index[6];
   std::vector< RayCompressed > direction[6];
 };
 

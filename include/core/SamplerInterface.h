@@ -8,10 +8,16 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Abstract interface class for image samplers
+ * 
+ * This is a interface for using a sampler in a polymorphic sense. The purpose of the sampler is
+ * to create a range of samples across a pixels surface when creating primary rays. 
  */
 class SamplerInterface
 {
 public:
+  /**
+   * @brief      Virtual destructor required for interface 
+   */
   virtual ~SamplerInterface() {}
 
   /**

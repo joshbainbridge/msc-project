@@ -11,10 +11,16 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Used to filter the final image from sample data
+ * 
+ * This is a tbb functor class that uses the filter and image data to convolve the final image in
+ * a parrallel manner. 
  */
 class Convolve
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   Convolve(FilterInterface* _filter, Image* _image)
    : m_filter(_filter)
    , m_image(_image)

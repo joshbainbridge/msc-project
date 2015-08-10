@@ -16,10 +16,18 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the shader interface and represents a lambertian surface
+ * 
+ * This shader will evaluate a perfectly diffuse surface and importance sample the hemisphere
+ * according to the cosine term in the rendering equation. This is required for multiple importance
+ * sampling within the integrator. It also implements the clone and initialize methods so that
+ * texture information can be cached with multiple shading points simultaneously.
  */
 class LambertShader : public ShaderInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   LambertShader()
     : m_reflectance(1.f)
   {;}

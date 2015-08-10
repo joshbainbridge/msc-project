@@ -8,6 +8,9 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Structure to contain a uncompressed ray
+ * 
+ * Uncompressed rays are an extension of Embree's ray type to support path tracing and are also used
+ * for hit point sorting to minimise usage on memory.
  */
 struct RayUncompressed
 {

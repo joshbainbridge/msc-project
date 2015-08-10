@@ -8,10 +8,16 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Abstract interface class for image filtering
+ * 
+ * This is a simple interface for using a filter in a polymophic sense. As this operation is
+ * unlikely to be used on single pixels it takes a range of data to compute the final result.
  */
 class FilterInterface
 {
 public:
+  /**
+   * @brief      Virtual destructor required for interface 
+   */
   virtual ~FilterInterface() {}
 
   /**

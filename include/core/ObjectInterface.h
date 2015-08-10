@@ -7,10 +7,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Abstract interface class for image samplers
+ * 
+ * This is a simple interface for using a object in a polymorphic sense. It only requires that
+ * each inherited class be able to retrieve texture coordinates using a primitive identification
+ * number and some barycentric coordinates.
  */
 class ObjectInterface
 {
 public:
+  /**
+   * @brief      Virtual destructor required for interface 
+   */
   virtual ~ObjectInterface() {}
 
   /**

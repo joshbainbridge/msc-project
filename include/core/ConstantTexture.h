@@ -7,11 +7,18 @@
 MSC_NAMESPACE_BEGIN
 
 /**
- * @brief      Inherits from the shader interface and represents a non-cntributing surface
+ * @brief      Inherits from the shader interface and represents a constant texture
+ * 
+ * When initialized this will avoid creating a std::vector of data as it would be inefficient to
+ * do so with non varying variables. As a result the colour method just returns the same colour
+ * value without using the index.
  */
 class ConstantTexture : public TextureInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   ConstantTexture()
     : m_constant(Colour3f(0.f, 0.f, 0.f))
   {;}
@@ -46,7 +53,14 @@ public:
     std::vector< float >& _v,
     TextureSystem _texture_system
     );
-  
+
+  /**
+   * @brief      Gets colour value according to index
+   *
+   * @param[in]  _index  colour index to find value for specific position
+   *
+   * @return     colour according to index
+   */
   Colour3f colour(const size_t _index) const;
 
 private:

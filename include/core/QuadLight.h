@@ -8,10 +8,16 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the light interface and represents a quad light surface
+ * 
+ * This represent a physically based quad light that can evaluate a point in space
+ * as well as sample it's surface and return the probaility density in respect to area.
  */
 class QuadLight : public LightInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   QuadLight()
     : m_translation(Vector3f(0.f, 0.f, 0.f))
     , m_rotation(Vector3f(0.f, 0.f, 0.f))

@@ -17,10 +17,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Used to create primary rays from scene camera
+ * 
+ * This is a tbb functor class that uses the scene camera to produce primary rays and adds the
+ * result into a local buffer. This is then added to the global bins that will in tern update
+ * the batch queue.
  */
 class Camera
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   Camera(
     CameraInterface* _camera,
     SamplerInterface* _sampler,

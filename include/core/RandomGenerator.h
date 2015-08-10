@@ -9,12 +9,15 @@
 MSC_NAMESPACE_BEGIN
 
 /**
- * @brief      A uniform random generator using boosts mersenne twister algorithm
+ * @brief      A uniform random generator
+ * 
+ * This random generator uses boost's mersenne twister algorithm and a uniform distribution to
+ * produce float values between zero and one. Local copies are created for each thread and passed
+ * to scene objects to prevent mutation of shared data.
  */
 class RandomGenerator
 {
 public:
-
   /**
    * @brief      Creates a uniform random number between 0 and 1 
    *

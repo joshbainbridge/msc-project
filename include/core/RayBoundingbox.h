@@ -10,14 +10,22 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Functor class to find bounding box from an array of rays
+ * 
+ * This class was created to find the bounding box of a group of rays using tbb in parrallel manner.
  */
 class RayBoundingbox
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   RayBoundingbox(RayUncompressed* _data)
    : m_data(_data)
   {;}
 
+  /**
+   * @brief      Initialiser list used when splitting class
+   */
   RayBoundingbox(RayBoundingbox& s, tbb::split )
    : m_data(s.m_data)
   {;}

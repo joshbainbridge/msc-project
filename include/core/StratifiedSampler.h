@@ -8,11 +8,13 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the sampler interface and represents a stratified sampler function
+ * 
+ * This will create an ditributed range of samples across a single pixel with stocastic variance
+ * unlike the grid sampler.
  */
 class StratifiedSampler : public SamplerInterface
 {
 public:
-  
   /**
    * @brief      Create a stratified grid of samples across pixel area
    *

@@ -11,10 +11,19 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Abstract interface class for surface shaders
+ * 
+ * This is an interface for using a shader in a polymorphic sense. Due to the design of the
+ * integrator the shader will take only a single position on the surface to evaluate at a time.
+ * It will also be responsible for sampling according to a probability density and returning such
+ * data and for use with multiple importance sampling. Access to textures across multiple positions
+ * are pre calculated and cached to improve memory performance.
  */
 class ShaderInterface
 {
 public:
+  /**
+   * @brief      Virtual destructor required for interface
+   */
   virtual ~ShaderInterface() {}
 
   /**

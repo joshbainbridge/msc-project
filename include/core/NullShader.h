@@ -8,6 +8,9 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the shader interface and represents a non-contributing surface
+ * 
+ * Represents a shader that does not contribute to the lighting intergral and is primarily used
+ * as a simple index toward lights that have geometric representation.
  */
 class NullShader : public ShaderInterface
 {

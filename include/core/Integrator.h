@@ -20,10 +20,18 @@ MSC_NAMESPACE_BEGIN
 /**
  * @brief      A range template that describes a one dimensional range containing an equal comparison
  *
- * @tparam     type  Type of data in range that must be comparible
+ * @tparam     type  Type of data in range that must be comparable
+ * 
+ * This is a tbb range template to allow for a parallel algorithm to divide it's tasks into groups
+ * based upon a distinct and comparable property. It will also divide a continuous range into
+ * smaller ranges if they exceed a given grain size. The range should already be sorted according
+ * to its comparable property before being processed as this will increase performance.
  */
 template < typename type > class RangeGeom {
 public:
+  /**
+   * @brief      Initialiser list for template
+   */
   RangeGeom(size_t _begin, size_t _end, size_t _grainsize, type _array)
    : m_begin(_begin)
    , m_end(_end)
@@ -103,11 +111,22 @@ public:
 };
 
 /**
- * @brief      Lighting intergrator for surface intersections
+ * @brief      Lighting integrator for surface intersections
+ * 
+ * This class is a tbb functor that will integrate the rendering equation using a uni-directional
+ * path tracing algorithm. It will optimise the process by using next event estimation as well as
+ * multiple importance sampling of both the light and brdf strategies. Russian roulette is also used
+ * for path termination within a defined range using a threshold. It is divided into five main
+ * section that are: no intersection found, intersected light, texture caching/initialization,
+ * next event estimation and continuation of random walk. This order of operation is influenced by
+ * the design of the SmallVCM renderer.
  */
 class Integrator
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   Integrator(
     Scene* _scene,
     Image* _image,

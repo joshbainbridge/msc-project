@@ -10,10 +10,18 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Abstract interface class for surface shaders
+ * 
+ * This is an interface for using a texture in a polymorphic sense. It describes three main methods
+ * that are responsible for cloning the class to allow for mutation on each thread locally,
+ * initializing the texture to cache the texture colour and finally retrieving the value according
+ * to an index.
  */
 class TextureInterface
 {
 public:
+  /**
+   * @brief      Virtual destructor required for interface
+   */
   virtual ~TextureInterface() {}
 
   /**

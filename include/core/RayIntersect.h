@@ -11,10 +11,15 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Functor class to intersect rays with scene geometry
+ * 
+ * A simple functor class to allow parallelism while traversing rays across scene geometry using tbb.
  */
 class RayIntersect
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   RayIntersect(Scene* _scene, RayUncompressed* _data)
    : m_scene(_scene)
    , m_data(_data)

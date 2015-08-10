@@ -8,10 +8,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the camera interface and represents a lens based camera
+ * 
+ * This camera creates a perspective while integrating across the area of an aperture and using a
+ * lens to converge ray direction upon a focal plane. The sample method takes a range of samples
+ * from a single pixel to improve performance.
  */
 class ThinLensCamera : public CameraInterface
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   ThinLensCamera()
     : m_translation(Vector3f(0.f, 0.f, 0.f))
     , m_rotation(Vector3f(0.f, 0.f, 0.f))

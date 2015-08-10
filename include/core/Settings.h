@@ -7,6 +7,11 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Structure of settings information
+ * 
+ * The settings that are read from the scene file are stored here and mostly address limits on ray
+ * depth when rendering and path termination when using russian roulette. It also contains information
+ * on the amount of memory to be allocated when processing different operations. Most notable of these
+ * is the bin exponent that controls the size of the batches.
  */
 struct Settings
 {

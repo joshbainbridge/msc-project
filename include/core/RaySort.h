@@ -10,10 +10,17 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Sorts rays according to a ray position and direction recursively and in parallel
+ * 
+ * This will recursively sort rays according to the median split along the longest axis of a bounding
+ * box. When the size reaches a minimum size it stops sorting rays according to position and starts
+ * sorting according to direction to achieve maximum coherency.
  */
 class RaySort
 {
 public:
+  /**
+   * @brief      Initialiser list for class
+   */
   RaySort(
     size_t _begin,
     size_t _end,

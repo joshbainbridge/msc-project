@@ -16,6 +16,12 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Data structure for scene information such as objects, lights and shaders
+ * 
+ * The scene structure contains std::vectors of polymorphic pointers to implemented objects on
+ * the heap. Smart pointers are used to manage memory and there is also a map that represents the
+ * relationship between shaders and lights. The RTCScene is the acceleration structure used by
+ * Embree to traverse rays across geometry stored in the objects vector. The scene should not mutate
+ * after initial construction.
  */
 struct Scene
 {

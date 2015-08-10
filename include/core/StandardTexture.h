@@ -9,6 +9,10 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the shader interface and represents a non-cntributing surface
+ * 
+ * When initialized this will create a std::vector containing texture data for each position in a
+ * range. Texture lookup is vectorized and sorted according to object and geometric primative. This
+ * allows for optimal usage of memory when reading in large textures sets. 
  */
 class StandardTexture : public TextureInterface
 {
@@ -44,6 +48,13 @@ public:
     TextureSystem _texture_system
     );
   
+  /**
+   * @brief      Gets colour value according to index
+   *
+   * @param[in]  _index  colour index to find value for specific position
+   *
+   * @return     colour according to index
+   */
   Colour3f colour(const size_t _index) const;
 
 private:

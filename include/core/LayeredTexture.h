@@ -9,7 +9,12 @@
 MSC_NAMESPACE_BEGIN
 
 /**
- * @brief      Inherits from the shader interface and represents a non-cntributing surface
+ * @brief      Inherits from the texture interface and represents a layered texturing system
+ * 
+ * This texture takes two base textures and combines them using a mask texture. Each texture and
+ * the mask can be of any other texture type, that currently being a constant, standard texture or
+ * possibly another texture. As there is no integral to be sampled, russian roulette is not used
+ * as this would introduce variance with minimal performance increase.
  */
 class LayeredTexture : public TextureInterface
 {
@@ -20,12 +25,14 @@ public:
    * @return     texture path as string
    */
   inline TextureInterface upper() const {return *m_upper;}
+  
   /**
    * @brief      Getter method for texture path
    *
    * @return     texture path as string
    */
   inline TextureInterface lower() const {return *m_lower;}
+
   /**
    * @brief      Getter method for texture path
    *
@@ -70,7 +77,14 @@ public:
     std::vector< float >& _v,
     TextureSystem _texture_system
     );
-  
+
+  /**
+   * @brief      Gets colour value according to index
+   *
+   * @param[in]  _index  colour index to find value for specific position
+   *
+   * @return     colour according to index
+   */
   Colour3f colour(const size_t _index) const;
 
 private:

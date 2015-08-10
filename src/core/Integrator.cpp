@@ -22,6 +22,7 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
   size_t light_count = m_scene->lights.size();
   float light_pick_probability = 1.f / light_count;
 
+  // If nothing was hit
   if(geom_id == -1)
     return;
 
@@ -37,10 +38,13 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
   {
     LightInterface* light = m_scene->lights[intersected_light].get();
 
-    // Loop through the group
     for(size_t index = r.begin(); index < r.end(); ++index)
     {
-      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
+      Vector3f ray_direction = Vector3f(
+        m_batch[index].dir[0],
+        m_batch[index].dir[1],
+        m_batch[index].dir[2]
+        ).normalized();
 
       Colour3f light_radiance;
       float light_pdfa;
@@ -59,10 +63,12 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
 
       if(light_radiance.matrix().maxCoeff() > M_EPSILON)
       {
-        // Add light radiance to samples
-        m_image->samples[m_batch[index].sampleID].r += light_radiance[0] * mis_balance * m_batch[index].weight[0];
-        m_image->samples[m_batch[index].sampleID].g += light_radiance[1] * mis_balance * m_batch[index].weight[1];
-        m_image->samples[m_batch[index].sampleID].b += light_radiance[2] * mis_balance * m_batch[index].weight[2];
+        m_image->samples[m_batch[index].sampleID].r += light_radiance[0]
+         * mis_balance * m_batch[index].weight[0];
+        m_image->samples[m_batch[index].sampleID].g += light_radiance[1]
+         * mis_balance * m_batch[index].weight[1];
+        m_image->samples[m_batch[index].sampleID].b += light_radiance[2]
+         * mis_balance * m_batch[index].weight[2];
       }
     }
 
@@ -104,7 +110,6 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
     shadow_ray.time = 0.f;
     shadow_ray.mask = 0x0FFFFFFF;
 
-    // Loop through the group
     for(size_t index = r.begin(); index < r.end(); ++index)
     {
       size_t colour_index = index - r.begin();
@@ -112,9 +117,21 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       size_t ligt_identifier = size_t(light_count * random.sample());
       LightInterface* light = m_scene->lights[ligt_identifier].get();
 
-      Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
-      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
-      Vector3f normal = Vector3f(m_batch[index].Ng[0], m_batch[index].Ng[1], m_batch[index].Ng[2]).normalized() * -1.f;
+      Vector3f ray_origin = Vector3f(
+        m_batch[index].org[0],
+        m_batch[index].org[1],
+        m_batch[index].org[2]
+        );
+      Vector3f ray_direction = Vector3f(
+        m_batch[index].dir[0],
+        m_batch[index].dir[1],
+        m_batch[index].dir[2]
+        ).normalized();
+      Vector3f normal = Vector3f(
+        m_batch[index].Ng[0],
+        m_batch[index].Ng[1],
+        m_batch[index].Ng[2]
+        ).normalized() * -1.f;
       Vector3f position = ray_origin + ray_direction * m_batch[index].tfar;
       Vector3f output_dir = ray_direction * -1.f;
       Vector3f input_dir;
@@ -138,7 +155,9 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
           float mis_balance = misTwo(light_pdfw * light_pick_probability, bsdf_pdfw);
           // mis_balance = 0.5f;
 
-          Colour3f contribution = (mis_balance * cos_theta / (light_pdfw * light_pick_probability)) * (light_radiance * bsdf_weight);
+          Colour3f contribution = (mis_balance
+           * cos_theta / (light_pdfw * light_pick_probability))
+           * (light_radiance * bsdf_weight);
 
           RayUncompressed occlusion_test = shadow_ray;
           occlusion_test.org[0] = position[0];
@@ -178,9 +197,21 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
 
       size_t colour_index = index - r.begin();
 
-      Vector3f ray_origin = Vector3f(m_batch[index].org[0], m_batch[index].org[1], m_batch[index].org[2]);
-      Vector3f ray_direction = Vector3f(m_batch[index].dir[0], m_batch[index].dir[1], m_batch[index].dir[2]).normalized();
-      Vector3f normal = Vector3f(m_batch[index].Ng[0], m_batch[index].Ng[1], m_batch[index].Ng[2]).normalized() * -1.f;
+      Vector3f ray_origin = Vector3f(
+        m_batch[index].org[0],
+        m_batch[index].org[1],
+        m_batch[index].org[2]
+        );
+      Vector3f ray_direction = Vector3f(
+        m_batch[index].dir[0],
+        m_batch[index].dir[1],
+        m_batch[index].dir[2]
+        ).normalized();
+      Vector3f normal = Vector3f(
+        m_batch[index].Ng[0],
+        m_batch[index].Ng[1],
+        m_batch[index].Ng[2]
+        ).normalized() * -1.f;
       Vector3f position = ray_origin + ray_direction * m_batch[index].tfar;
       Vector3f output_dir = ray_direction * -1.f;
       Vector3f input_dir;
@@ -198,9 +229,12 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       input_ray.dir[0] = input_dir[0];
       input_ray.dir[1] = input_dir[1];
       input_ray.dir[2] = input_dir[2];
-      input_ray.weight[0] = m_batch[index].weight[0] * bsdf_weight[0] * (cos_theta / bsdf_pdfw) / cont_probability;
-      input_ray.weight[1] = m_batch[index].weight[1] * bsdf_weight[1] * (cos_theta / bsdf_pdfw) / cont_probability;
-      input_ray.weight[2] = m_batch[index].weight[2] * bsdf_weight[2] * (cos_theta / bsdf_pdfw) / cont_probability;
+      input_ray.weight[0] = m_batch[index].weight[0]
+       * bsdf_weight[0] * (cos_theta / bsdf_pdfw) / cont_probability;
+      input_ray.weight[1] = m_batch[index].weight[1]
+       * bsdf_weight[1] * (cos_theta / bsdf_pdfw) / cont_probability;
+      input_ray.weight[2] = m_batch[index].weight[2]
+       * bsdf_weight[2] * (cos_theta / bsdf_pdfw) / cont_probability;
       input_ray.lastPdf = bsdf_pdfw;
       input_ray.rayDepth = m_batch[index].rayDepth + 1;
       input_ray.sampleID = m_batch[index].sampleID;

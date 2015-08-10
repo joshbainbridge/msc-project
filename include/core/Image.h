@@ -9,6 +9,8 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Sample structure representing colour and position on image
+ * 
+ * A single sample with minimum data as to conserve system memory when using large sample counts.
  */
 struct Sample
 {
@@ -18,6 +20,9 @@ struct Sample
 
 /**
  * @brief      Union data type of a rgb spectral representation
+ * 
+ * A single pixel that uses a tri-band representation in red, green and blue of the spectral energy
+ * being integrated across the surface area.
  */
 union Pixel
 {
@@ -27,6 +32,11 @@ union Pixel
 
 /**
  * @brief      Image structure that contains sample and pixel data
+ * 
+ * Basic image structure that contains width and height information as well as the base value for
+ * the sample count. The iteration count represents how many times each pixel has received an
+ * approximation of the lighting integral. The data itself is stored in std::vectors to allow
+ * for automatic clean up.
  */
 struct Image
 {

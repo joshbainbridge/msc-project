@@ -8,11 +8,13 @@ MSC_NAMESPACE_BEGIN
 
 /**
  * @brief      Inherits from the filter interface and represents a tent filter function
+ * 
+ * Basic tent filter to convolve samples into final image. As this operation is unlikely to be used
+ * on single pixels it takes a range of data to compute the final result.
  */
 class TentFilter : public FilterInterface
 {
 public:
-
   /**
    * @brief      Convolution function for producing final image
    *
