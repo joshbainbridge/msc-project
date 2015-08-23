@@ -57,7 +57,7 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
       {
         float light_pdfw = areaToAngleProbability(light_pdfa, m_batch[index].tfar, cos_theta);
         float last_pdfw = m_batch[index].lastPdf;
-        mis_balance = misTwo(last_pdfw, light_pdfw * light_pick_probability);
+        mis_balance = misBalance(last_pdfw, light_pdfw * light_pick_probability);
       }
       // mis_balance = 0.5f;
 
@@ -101,15 +101,6 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
 
   // Next event estimation
   {
-    RayUncompressed shadow_ray;
-    shadow_ray.tnear = 0.001f;
-    shadow_ray.tfar = 100000.f;
-    shadow_ray.geomID = RTC_INVALID_GEOMETRY_ID;
-    shadow_ray.primID = RTC_INVALID_GEOMETRY_ID;
-    shadow_ray.instID = RTC_INVALID_GEOMETRY_ID;
-    shadow_ray.time = 0.f;
-    shadow_ray.mask = 0x0FFFFFFF;
-
     for(size_t index = r.begin(); index < r.end(); ++index)
     {
       size_t colour_index = index - r.begin();
@@ -152,23 +143,30 @@ void Integrator::operator()(const RangeGeom< RayUncompressed* > &r) const
 
         if(bsdf_weight.matrix().maxCoeff() > M_EPSILON)
         {
-          float mis_balance = misTwo(light_pdfw * light_pick_probability, bsdf_pdfw);
+          float mis_balance = misBalance(light_pdfw * light_pick_probability, bsdf_pdfw);
           // mis_balance = 0.5f;
 
           Colour3f contribution = (mis_balance
            * cos_theta / (light_pdfw * light_pick_probability))
            * (light_radiance * bsdf_weight);
 
-          RayUncompressed occlusion_test = shadow_ray;
-          occlusion_test.org[0] = position[0];
-          occlusion_test.org[1] = position[1];
-          occlusion_test.org[2] = position[2];
-          occlusion_test.dir[0] = input_dir[0];
-          occlusion_test.dir[1] = input_dir[1];
-          occlusion_test.dir[2] = input_dir[2];
-          rtcIntersect(m_scene->rtc_scene, occlusion_test.rtc_ray);
+          RayUncompressed shadow_ray;
+          shadow_ray.tnear = 0.001f;
+          shadow_ray.tfar = distance;
+          shadow_ray.mask = 0x0FFFFFFF;
+          shadow_ray.time = 0.f;
+          shadow_ray.geomID = RTC_INVALID_GEOMETRY_ID;
+          shadow_ray.primID = RTC_INVALID_GEOMETRY_ID;
+          shadow_ray.instID = RTC_INVALID_GEOMETRY_ID;
+          shadow_ray.org[0] = position[0];
+          shadow_ray.org[1] = position[1];
+          shadow_ray.org[2] = position[2];
+          shadow_ray.dir[0] = input_dir[0];
+          shadow_ray.dir[1] = input_dir[1];
+          shadow_ray.dir[2] = input_dir[2];
+          rtcOccluded(m_scene->rtc_scene, shadow_ray.rtc_ray);
 
-          if(distance < occlusion_test.tfar)
+          if(shadow_ray.geomID != 0)
           {
             m_image->samples[m_batch[index].sampleID].r += contribution[0] * m_batch[index].weight[0];
             m_image->samples[m_batch[index].sampleID].g += contribution[1] * m_batch[index].weight[1];

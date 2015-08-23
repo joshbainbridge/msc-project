@@ -1,5 +1,6 @@
-#include <core/ConstantTexture.h>
 #include <vector>
+
+#include <core/ConstantTexture.h>
 
 MSC_NAMESPACE_BEGIN
 

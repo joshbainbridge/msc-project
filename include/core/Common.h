@@ -42,7 +42,7 @@ inline float angleToAreaProbability(const float _angle, const float _distance, c
   return _angle * abs(_cosine) / (_distance * _distance);
 }
 
-inline float misTwo(const float _first, const float _second)
+inline float misBalance(const float _first, const float _second)
 {
   return (_first / (_first + _second));
 }

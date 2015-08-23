@@ -64,6 +64,8 @@ public:
 
   /**
    * @brief      Check if pathtracer is set to terminate
+   *
+   * @return     termination state
    */
   bool active();
 
