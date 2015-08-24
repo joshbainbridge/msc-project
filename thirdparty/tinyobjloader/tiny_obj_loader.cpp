@@ -1,3 +1,8 @@
+/// @brief An object passing module
+/// Modified from :-
+/// Syoyo Fujita (August 4, 2015). tinyobjloader [online].
+/// [Accessed 2015]. Available from: <https://github.com/syoyo/tinyobjloader>.
+
 //
 // Copyright 2012-2015, Syoyo Fujita.
 //
