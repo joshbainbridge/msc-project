@@ -1,15 +1,14 @@
-MSc Project:
-=======
+Sorted Shading for Uni-Directional Pathtracing:
+===============================================
 
-Description here.
+This repository is the the implementation of a uni-directional pathtracer based upon the design described by Eisenacher et al. (2013), as well as other well established optimisations for production rendering. Compilation should have optimisations enabled and the Embree library will need to be compiled with RTCORE_ENABLE_RAY_MASK turned on.
 
 Required dependencies are:
 
-* C++03
 * CMake 2.8
 * Boost 1.55
 * TBB 4.2
-* Embree (RTCORE_ENABLE_RAY_MASK) 2.6.1
+* Embree 2.6.1
 * OpenEXR 2.2
 * OpenColorIO 1.0.9
 * OpenImageIO 1.5.13
